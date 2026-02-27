@@ -1,8 +1,19 @@
+@import url("https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tailwindcss";
+
+/* @import url("https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&display=swap"); */
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --color-dark: #25324b;
+  --color-primary: #4640de;
+  --color-sky: #26a4ff;
+  --color-body: #515b6f;
+  --color-muted: #7c8493;
+  --color-border: #d6ddeb;
+  --color-surface: #f8f8fd;
+  --color-footer: #202430;
 }
 
 @theme inline {
@@ -10,17 +21,29 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-brand-dark: #25324b;
+  --color-brand-primary: #4640de;
+  --color-brand-sky: #26a4ff;
+  --color-brand-body: #515b6f;
+  --color-brand-muted: #7c8493;
+  --color-brand-border: #d6ddeb;
+  --color-brand-surface: #f8f8fd;
+  --color-brand-footer: #202430;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Epilogue", Arial, Helvetica, sans-serif;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remove default outline, add custom */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
