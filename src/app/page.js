@@ -1,6 +1,7 @@
 import Footer from "@/component/Footer";
 import Hero from "@/component/Hero";
 import Navbar from "@/component/Navbar";
+import OurPartners from "@/component/Ourpartners ";
 import Image from "next/image";
 
 export default function Home() {
@@ -15,6 +16,7 @@ export default function Home() {
       <Navbar></Navbar>
       <main>
         <Hero></Hero>
+        <OurPartners></OurPartners>
       </main>
       <Footer></Footer>
     </>
