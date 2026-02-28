@@ -3,27 +3,33 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ShieldCheck, LayoutDashboard } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { data: session, status } = useSession();
+  if (status === "loading") {
+    return null;
+  }
 
   const isAuthenticated = status === "authenticated";
+  const isAdmin = session?.user?.role === "admin";
 
-  // Scroll shadow effect
+  // The correct dashboard href based on role
+  const dashboardHref = isAdmin ? "/dashboard" : "/dashboard";
+  const dashboardLabel = isAdmin ? "Admin Panel" : "Dashboard";
+  const DashboardIcon = isAdmin ? ShieldCheck : LayoutDashboard;
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on outside click
   useEffect(() => {
     if (!menuOpen) return;
-
     const handler = (e) => {
       if (
         !e.target.closest("#mobile-menu") &&
@@ -32,7 +38,6 @@ export default function Navbar() {
         setMenuOpen(false);
       }
     };
-
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
   }, [menuOpen]);
@@ -78,19 +83,30 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Desktop CTA Buttons */}
+        {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
           {isAuthenticated ? (
             <>
+              {/* Role-aware dashboard button */}
               <Link
-                href="/dashboard"
-                className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#4640DE] px-5 py-2.5 rounded hover:bg-[#F1F0FF] transition-colors duration-200 no-underline"
+                href={dashboardHref}
+                className={`flex items-center gap-1.5 font-[family-name:var(--font-epilogue)] font-bold
+                            text-[15px] px-5 py-2.5 rounded transition-colors duration-200 no-underline
+                            ${
+                              isAdmin
+                                ? "text-[#FFB836] hover:bg-[#FFF8E6]"
+                                : "text-[#4640DE] hover:bg-[#F1F0FF]"
+                            }`}
               >
-                Dashboard
+                <DashboardIcon size={15} />
+                {dashboardLabel}
               </Link>
+
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white bg-[#4640DE] px-5 py-2.5 rounded hover:bg-[#3730C4] transition-all duration-200 hover:-translate-y-px"
+                className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white
+                           bg-[#4640DE] px-5 py-2.5 rounded hover:bg-[#3730C4]
+                           transition-all duration-200 hover:-translate-y-px"
               >
                 Logout
               </button>
@@ -99,13 +115,16 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#4640DE] px-5 py-2.5 rounded hover:bg-[#F1F0FF] transition-colors duration-200 no-underline"
+                className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#4640DE]
+                           px-5 py-2.5 rounded hover:bg-[#F1F0FF] transition-colors duration-200 no-underline"
               >
                 Login
               </Link>
               <Link
                 href="/signup"
-                className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white bg-[#4640DE] px-5 py-2.5 rounded hover:bg-[#3730C4] transition-all duration-200 hover:-translate-y-px no-underline"
+                className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white
+                           bg-[#4640DE] px-5 py-2.5 rounded hover:bg-[#3730C4]
+                           transition-all duration-200 hover:-translate-y-px no-underline"
               >
                 Sign Up
               </Link>
@@ -113,11 +132,12 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile Hamburger */}
+        {/* Mobile hamburger */}
         <button
           id="hamburger"
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden flex items-center justify-center p-2 rounded-lg text-[#25324B] hover:bg-gray-100 transition-colors"
+          className="md:hidden flex items-center justify-center p-2 rounded-lg text-[#25324B]
+                     hover:bg-gray-100 transition-colors"
           aria-label="Toggle menu"
           aria-expanded={menuOpen}
         >
@@ -128,42 +148,64 @@ export default function Navbar() {
       {/* Mobile Menu */}
       <div
         id="mobile-menu"
-        className={`md:hidden bg-white border-t border-[#E7E7F5] overflow-hidden transition-all duration-300 ease-in-out ${
-          menuOpen ? "max-h-80 opacity-100" : "max-h-0 opacity-0"
-        }`}
+        className={`md:hidden bg-white border-t border-[#E7E7F5] overflow-hidden
+                    transition-all duration-300 ease-in-out
+                    ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
       >
         <div className="px-6 pb-6 flex flex-col gap-0">
           <Link
             href="/jobs"
-            className="font-[family-name:var(--font-epilogue)] font-medium text-base text-[#25324B] py-3 border-b border-[#F4F4F6] no-underline"
+            className="font-[family-name:var(--font-epilogue)] font-medium text-base text-[#25324B]
+                       py-3 border-b border-[#F4F4F6] no-underline"
             onClick={() => setMenuOpen(false)}
           >
             Find Jobs
           </Link>
           <Link
             href="/companies"
-            className="font-[family-name:var(--font-epilogue)] font-medium text-base text-[#25324B] py-3 border-b border-[#F4F4F6] no-underline"
+            className="font-[family-name:var(--font-epilogue)] font-medium text-base text-[#25324B]
+                       py-3 border-b border-[#F4F4F6] no-underline"
             onClick={() => setMenuOpen(false)}
           >
             Browse Companies
           </Link>
 
-          <div className="flex gap-3 mt-4">
+          {/* Role badge in mobile menu */}
+          {isAuthenticated && (
+            <div
+              className={`mt-3 mb-1 flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold
+                             font-[family-name:var(--font-epilogue)] w-fit
+                             ${isAdmin ? "bg-[#FFF8E6] text-[#FFB836]" : "bg-[#F1F0FF] text-[#4640DE]"}`}
+            >
+              <DashboardIcon size={12} />
+              {isAdmin ? "Admin Account" : "User Account"} ·{" "}
+              {session?.user?.email}
+            </div>
+          )}
+
+          <div className="flex gap-3 mt-3">
             {isAuthenticated ? (
               <>
                 <Link
-                  href="/dashboard"
-                  className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#4640DE] py-3 border-2 border-[#4640DE] rounded no-underline"
+                  href={dashboardHref}
+                  className={`flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold
+                              text-[15px] py-3 border-2 rounded no-underline
+                              ${
+                                isAdmin
+                                  ? "text-[#FFB836] border-[#FFB836]"
+                                  : "text-[#4640DE] border-[#4640DE]"
+                              }`}
                   onClick={() => setMenuOpen(false)}
                 >
-                  Dashboard
+                  {dashboardLabel}
                 </Link>
                 <button
                   onClick={() => {
                     setMenuOpen(false);
                     signOut({ callbackUrl: "/" });
                   }}
-                  className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white bg-[#4640DE] py-3 rounded"
+                  className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold
+                             text-[15px] text-white bg-[#4640DE] py-3 rounded"
                 >
                   Logout
                 </button>
@@ -172,14 +214,16 @@ export default function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#4640DE] py-3 border-2 border-[#4640DE] rounded no-underline"
+                  className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold
+                             text-[15px] text-[#4640DE] py-3 border-2 border-[#4640DE] rounded no-underline"
                   onClick={() => setMenuOpen(false)}
                 >
                   Login
                 </Link>
                 <Link
                   href="/signup"
-                  className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white bg-[#4640DE] py-3 rounded no-underline"
+                  className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold
+                             text-[15px] text-white bg-[#4640DE] py-3 rounded no-underline"
                   onClick={() => setMenuOpen(false)}
                 >
                   Sign Up

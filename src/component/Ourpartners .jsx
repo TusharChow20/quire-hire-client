@@ -93,7 +93,7 @@ export default function OurPartners() {
         </p>
 
         {/* ── Desktop: single horizontal row (sm+) ── */}
-        <div className="hidden sm:flex flex-row flex-wrap items-center gap-x-16">
+        <div className="hidden sm:flex flex-row flex-wrap items-center justify-between gap-x-16">
           {PARTNERS.map((p) => (
             <LogoButton key={p.id} partner={p} {...sharedProps} />
           ))}

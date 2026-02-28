@@ -1,194 +1,404 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  Briefcase, Users, Building2, TrendingUp, ArrowRight,
-  Star, Clock, CheckCircle, XCircle, Eye
+  Briefcase,
+  Users,
+  TrendingUp,
+  Plus,
+  Eye,
+  Star,
+  Trash2,
+  Clock,
+  ArrowRight,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  Building2,
 } from "lucide-react";
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend
-} from "recharts";
-import { adminFetchStats, adminFetchGrowth } from "@/lib/api";
-import StatusBadge from "@/component/StatusBadge";
+import Swal from "sweetalert2";
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-white border border-[#D6DDEB] rounded-lg p-3 shadow-lg text-[12px] font-[family-name:var(--font-epilogue)]">
-      <p className="font-bold text-[#25324B] mb-1">{label}</p>
-      {payload.map((p) => (
-        <p key={p.name} style={{ color: p.color }}>
-          {p.name}: <strong>{p.value}</strong>
-        </p>
-      ))}
-    </div>
-  );
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+const TYPE_STYLES = {
+  "Full Time": { bg: "#E8F9F0", text: "#56CDAD" },
+  "Part Time": { bg: "#FFF0E6", text: "#FFB836" },
+  Remote: { bg: "#EEF9FF", text: "#26A4FF" },
+  Internship: { bg: "#F0EFFE", text: "#7B61FF" },
+  Contract: { bg: "#FFE9E9", text: "#FF6550" },
 };
 
-export default function AdminOverview() {
-  const { data: session }   = useSession();
-  const [stats, setStats]   = useState(null);
-  const [growth, setGrowth] = useState([]);
-  const [loading, setLoading] = useState(true);
+function timeAgo(iso) {
+  const d = Math.floor((Date.now() - new Date(iso)) / 86400000);
+  if (d === 0) return "Today";
+  if (d === 1) return "Yesterday";
+  if (d < 7) return `${d}d ago`;
+  return `${Math.floor(d / 7)}w ago`;
+}
 
-  useEffect(() => {
-    Promise.all([adminFetchStats(), adminFetchGrowth(30)]).then(([s, g]) => {
-      if (s.success) setStats(s.stats);
-      if (g.success) {
-        // Merge job & application growth by date
-        const merged = g.jobGrowth.map((d) => {
-          const appDay = g.applicationGrowth.find((a) => a.date === d.date);
-          return {
-            date: d.date.slice(5), // "MM-DD"
-            Jobs: d.count,
-            Applications: appDay?.count || 0,
-          };
-        });
-        setGrowth(merged);
-      }
-      setLoading(false);
-    });
-  }, []);
-
-  if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-4 border-[#4640DE] border-t-transparent rounded-full animate-spin" />
+function StatCard({ label, value, icon: Icon, color, sub }) {
+  return (
+    <div className="bg-white border border-[#E7E7F5] rounded-2xl p-6 flex items-start gap-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+      <div
+        className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: `${color}18` }}
+      >
+        <Icon size={22} style={{ color }} />
+      </div>
+      <div>
+        <p className="font-[family-name:var(--font-epilogue)] text-[13px] text-[#7C8493] mb-0.5">
+          {label}
+        </p>
+        <p className="font-[family-name:var(--font-epilogue)] font-extrabold text-[28px] text-[#25324B] leading-none">
+          {value ?? "—"}
+        </p>
+        {sub && (
+          <p className="font-[family-name:var(--font-epilogue)] text-[12px] text-[#A8ADB7] mt-1">
+            {sub}
+          </p>
+        )}
+      </div>
     </div>
   );
+}
 
-  const statCards = [
-    { label: "Total Jobs",           value: stats?.totalJobs,         icon: <Briefcase  size={20} />, color: "#4640DE", bg: "#F1F0FF",  link: "/dashboard/jobs"         },
-    { label: "Total Applications",   value: stats?.totalApplications, icon: <Users      size={20} />, color: "#10B981", bg: "#ECFDF5",  link: "/dashboard/applications" },
-    { label: "Total Companies",      value: stats?.totalCompanies,    icon: <Building2  size={20} />, color: "#F59E0B", bg: "#FFF7E6",  link: null                      },
-    { label: "New Apps Today",       value: stats?.newApplicationsToday, icon: <TrendingUp size={20} />, color: "#FF6550", bg: "#FFE9E9", link: null                    },
-  ];
+export default function AdminOverview() {
+  const [stats, setStats] = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const fetchData = async () => {
+    try {
+      const [sRes, jRes] = await Promise.all([
+        fetch(`${API}/api/admin/stats?`),
+        fetch(`${API}/api/jobs?limit=6&sortBy=newest`),
+      ]);
+      const sd = await sRes.json();
+      const jd = await jRes.json();
+      if (sd.success) setStats(sd.stats);
+      if (jd.success) setJobs(jd.jobs || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // ── Feature toggle ────────────────────────────────────
+  const handleFeature = async (job) => {
+    const newVal = !job.isFeatured;
+    try {
+      const res = await fetch(`${API}/api/jobs/${job._id}/featured`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isFeatured: newVal }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setJobs((prev) =>
+          prev.map((j) =>
+            j._id === job._id ? { ...j, isFeatured: newVal } : j,
+          ),
+        );
+        showToast(newVal ? "Marked as featured ⭐" : "Removed from featured");
+      } else showToast(data.message || "Failed", "error");
+    } catch {
+      showToast("Network error", "error");
+    }
+  };
+
+  // ── Delete with SweetAlert2 ───────────────────────────
+  const handleDelete = async (job) => {
+    const result = await Swal.fire({
+      title: "Delete this job?",
+      html: `<p style="font-size:14px;color:#515B6F;margin-top:6px">
+                <strong style="color:#25324B">${job.title}</strong> at
+                <strong style="color:#25324B"> ${job.company}</strong> will be permanently
+                removed along with all its applications.</p>`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#FF6550",
+      cancelButtonColor: "#E5E7EB",
+      confirmButtonText: "Yes, delete it",
+      cancelButtonText: "Cancel",
+      customClass: { cancelButton: "!text-gray-700" },
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch(`${API}/api/jobs/${job._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setJobs((prev) => prev.filter((j) => j._id !== job._id));
+        showToast("Job deleted");
+        fetchData(); // refresh stats
+      } else showToast(data.message || "Delete failed", "error");
+    } catch {
+      showToast("Network error", "error");
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={32} className="animate-spin text-[#4640DE]" />
+      </div>
+    );
 
   return (
     <div className="space-y-8">
-      {/* Greeting */}
-      <div>
-        <h1 className="font-extrabold text-[28px] text-[#25324B] font-[family-name:var(--font-epilogue)]">
-          Admin Dashboard 🛠️
-        </h1>
-        <p className="text-[#7C8493] text-[15px] mt-1 font-[family-name:var(--font-epilogue)]">
-          Manage jobs, applications, and track platform growth.
-        </p>
+      {/* Toast */}
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 z-50 flex items-center gap-2.5 px-5 py-3.5 rounded-xl shadow-lg
+          font-[family-name:var(--font-epilogue)] font-semibold text-[14px] text-white
+          ${toast.type === "error" ? "bg-[#FF6550]" : "bg-[#56CDAD]"}`}
+        >
+          {toast.type === "error" ? (
+            <AlertCircle size={16} />
+          ) : (
+            <CheckCircle size={16} />
+          )}
+          {toast.msg}
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="font-[family-name:var(--font-epilogue)] font-extrabold text-[26px] text-[#25324B]">
+            Admin Dashboard
+          </h1>
+          <p className="font-[family-name:var(--font-epilogue)] text-[14px] text-[#7C8493] mt-1">
+            Manage your entire job board from here
+          </p>
+        </div>
+        <Link
+          href="/dashboard/jobs/create"
+          className="flex items-center gap-2 bg-[#4640DE] hover:bg-[#3730C4] text-white
+            font-[family-name:var(--font-epilogue)] font-bold text-[14px] px-5 py-3 rounded-xl
+            transition-colors shadow-[0_4px_14px_rgba(70,64,222,0.3)]"
+        >
+          <Plus size={16} /> Post New Job
+        </Link>
       </div>
 
-      {/* Stats cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map(({ label, value, icon, color, bg, link }) => {
-          const inner = (
-            <div className="bg-white rounded-xl border border-[#D6DDEB] p-5 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: bg, color }}>
-                  {icon}
-                </div>
-                {link && <ArrowRight size={14} className="text-[#D6DDEB]" />}
-              </div>
-              <p className="font-extrabold text-[28px] text-[#25324B] font-[family-name:var(--font-epilogue)]">{value ?? "—"}</p>
-              <p className="text-[13px] text-[#7C8493] font-[family-name:var(--font-epilogue)]">{label}</p>
-            </div>
-          );
-          return link
-            ? <Link key={label} href={link}>{inner}</Link>
-            : <div key={label}>{inner}</div>;
-        })}
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <StatCard
+          label="Total Jobs"
+          value={stats?.totalJobs}
+          icon={Briefcase}
+          color="#4640DE"
+          sub={`+${stats?.newJobsToday ?? 0} today`}
+        />
+        <StatCard
+          label="Total Applications"
+          value={stats?.totalApplications}
+          icon={Users}
+          color="#26A4FF"
+          sub={`+${stats?.newApplicationsToday ?? 0} today`}
+        />
+        <StatCard
+          label="Companies"
+          value={stats?.totalCompanies}
+          icon={Building2}
+          color="#56CDAD"
+        />
+        <StatCard
+          label="Top Category"
+          value={stats?.topCategories?.[0]?.category ?? "—"}
+          icon={TrendingUp}
+          color="#FFB836"
+          sub={`${stats?.topCategories?.[0]?.count ?? 0} listings`}
+        />
       </div>
 
-      {/* Growth chart */}
-      <div className="bg-white rounded-xl border border-[#D6DDEB] p-6">
-        <h2 className="font-bold text-[17px] text-[#25324B] mb-1 font-[family-name:var(--font-epilogue)]">Growth — Last 30 Days</h2>
-        <p className="text-[13px] text-[#7C8493] mb-6 font-[family-name:var(--font-epilogue)]">Jobs posted vs. applications received</p>
-        <ResponsiveContainer width="100%" height={260}>
-          <AreaChart data={growth} margin={{ top: 5, right: 10, bottom: 0, left: -20 }}>
-            <defs>
-              <linearGradient id="colorJobs" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#4640DE" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#4640DE" stopOpacity={0}   />
-              </linearGradient>
-              <linearGradient id="colorApps" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#26A4FF" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#26A4FF" stopOpacity={0}   />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
-            <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#7C8493", fontFamily: "Epilogue" }} tickLine={false} axisLine={false} interval={4} />
-            <YAxis tick={{ fontSize: 11, fill: "#7C8493", fontFamily: "Epilogue" }} tickLine={false} axisLine={false} allowDecimals={false} />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "12px", fontFamily: "Epilogue" }} />
-            <Area type="monotone" dataKey="Jobs"         stroke="#4640DE" strokeWidth={2} fill="url(#colorJobs)" dot={false} />
-            <Area type="monotone" dataKey="Applications" stroke="#26A4FF" strokeWidth={2} fill="url(#colorApps)" dot={false} />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Applications by status + Top categories */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Application statuses */}
-        <div className="bg-white rounded-xl border border-[#D6DDEB] p-6">
-          <h2 className="font-bold text-[17px] text-[#25324B] mb-4 font-[family-name:var(--font-epilogue)]">Applications by Status</h2>
-          <div className="space-y-3">
-            {(stats?.applicationsByStatus || []).map(({ status, count }) => {
-              const total   = stats?.totalApplications || 1;
-              const pct     = Math.round((count / total) * 100);
-              const colors  = { pending: "#F59E0B", reviewed: "#3B82F6", shortlisted: "#10B981", rejected: "#EF4444" };
+      {/* Application status breakdown */}
+      {stats?.applicationsByStatus?.length > 0 && (
+        <div className="bg-white border border-[#E7E7F5] rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+          <h2 className="font-[family-name:var(--font-epilogue)] font-bold text-[17px] text-[#25324B] mb-5">
+            Applications by Status
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { key: "pending", label: "Pending", color: "#FFB836" },
+              { key: "reviewed", label: "Reviewed", color: "#26A4FF" },
+              { key: "shortlisted", label: "Shortlisted", color: "#56CDAD" },
+              { key: "rejected", label: "Rejected", color: "#FF6550" },
+            ].map(({ key, label, color }) => {
+              const found = stats.applicationsByStatus.find(
+                (s) => s.status === key,
+              );
               return (
-                <div key={status}>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-[13px] font-semibold text-[#25324B] capitalize font-[family-name:var(--font-epilogue)]">{status}</span>
-                    <span className="text-[13px] text-[#7C8493] font-[family-name:var(--font-epilogue)]">{count} ({pct}%)</span>
-                  </div>
-                  <div className="h-2 bg-[#F0F0F0] rounded-full overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%`, background: colors[status] || "#7C8493" }} />
-                  </div>
+                <div
+                  key={key}
+                  className="text-center p-4 rounded-xl"
+                  style={{ background: `${color}12` }}
+                >
+                  <p
+                    className="font-[family-name:var(--font-epilogue)] font-extrabold text-[28px]"
+                    style={{ color }}
+                  >
+                    {found?.count ?? 0}
+                  </p>
+                  <p
+                    className="font-[family-name:var(--font-epilogue)] text-[13px] font-semibold mt-1"
+                    style={{ color: `${color}CC` }}
+                  >
+                    {label}
+                  </p>
                 </div>
               );
             })}
           </div>
         </div>
+      )}
 
-        {/* Top categories */}
-        <div className="bg-white rounded-xl border border-[#D6DDEB] p-6">
-          <h2 className="font-bold text-[17px] text-[#25324B] mb-4 font-[family-name:var(--font-epilogue)]">Top Job Categories</h2>
-          <div className="space-y-3">
-            {(stats?.topCategories || []).map(({ category, count }, i) => (
-              <div key={category} className="flex items-center gap-3">
-                <span className="w-6 h-6 rounded-full bg-[#F1F0FF] text-[#4640DE] text-[11px] font-bold flex items-center justify-center flex-shrink-0 font-[family-name:var(--font-epilogue)]">
-                  {i + 1}
-                </span>
-                <span className="flex-1 text-[14px] text-[#25324B] font-[family-name:var(--font-epilogue)]">{category}</span>
-                <span className="text-[13px] font-bold text-[#4640DE] font-[family-name:var(--font-epilogue)]">{count} jobs</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Recent applications */}
-      <div className="bg-white rounded-xl border border-[#D6DDEB] overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#D6DDEB]">
-          <h2 className="font-bold text-[17px] text-[#25324B] font-[family-name:var(--font-epilogue)]">Recent Applications</h2>
-          <Link href="/dashboard/applications" className="text-[13px] text-[#4640DE] font-semibold flex items-center gap-1 font-[family-name:var(--font-epilogue)]">
+      {/* Recent jobs */}
+      <div className="bg-white border border-[#E7E7F5] rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#F4F4F6]">
+          <h2 className="font-[family-name:var(--font-epilogue)] font-bold text-[17px] text-[#25324B]">
+            Recent Job Listings
+          </h2>
+          <Link
+            href="/dashboard/jobs"
+            className="flex items-center gap-1 font-[family-name:var(--font-epilogue)] font-semibold text-[13px] text-[#4640DE] hover:underline"
+          >
             View all <ArrowRight size={13} />
           </Link>
         </div>
-        {(stats?.recentApplications || []).map((app) => (
-          <div key={app._id} className="flex items-center gap-4 px-6 py-4 border-b border-[#F8F8FD] last:border-0">
-            <div className="w-9 h-9 rounded-full bg-[#F1F0FF] flex items-center justify-center text-[#4640DE] font-bold flex-shrink-0">
-              {app.name?.[0]?.toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-[14px] text-[#25324B] truncate font-[family-name:var(--font-epilogue)]">{app.name}</p>
-              <p className="text-[12px] text-[#7C8493] font-[family-name:var(--font-epilogue)]">{app.email}</p>
-            </div>
-            <StatusBadge status={app.status} />
+
+        {jobs.length === 0 ? (
+          <div className="py-16 text-center">
+            <Briefcase size={36} className="mx-auto text-[#D6DDEB] mb-3" />
+            <p className="font-[family-name:var(--font-epilogue)] text-[#7C8493] mb-3">
+              No jobs yet
+            </p>
+            <Link
+              href="/dashboard/jobs/create"
+              className="inline-flex items-center gap-1.5 font-[family-name:var(--font-epilogue)] font-semibold text-[14px] text-[#4640DE] hover:underline"
+            >
+              <Plus size={14} /> Post your first job
+            </Link>
           </div>
-        ))}
+        ) : (
+          <div className="divide-y divide-[#F4F4F6]">
+            {jobs.map((job) => {
+              const ts = TYPE_STYLES[job.type] || {
+                bg: "#F0F0F0",
+                text: "#666",
+              };
+              const logoColor = [
+                "#4640DE",
+                "#26A4FF",
+                "#56CDAD",
+                "#FFB836",
+                "#FF6550",
+              ][(job.company?.charCodeAt(0) || 0) % 5];
+              return (
+                <div
+                  key={job._id}
+                  className="flex items-center gap-4 px-6 py-4 hover:bg-[#FAFAFA] transition-colors"
+                >
+                  {/* Logo initial */}
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-[14px] flex-shrink-0"
+                    style={{ background: logoColor }}
+                  >
+                    {job.company?.[0]?.toUpperCase()}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#25324B] truncate">
+                        {job.title}
+                      </p>
+                      {job.isFeatured && (
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-[#FFB836] bg-[#FFF8E6] px-2 py-0.5 rounded-full border border-[#FFE8A3] flex-shrink-0">
+                          <Star size={8} fill="currentColor" /> Featured
+                        </span>
+                      )}
+                    </div>
+                    <p className="font-[family-name:var(--font-epilogue)] text-[13px] text-[#7C8493] flex items-center gap-1.5">
+                      {job.company}
+                      <span className="w-1 h-1 rounded-full bg-[#D6DDEB]" />
+                      {job.location}
+                    </p>
+                  </div>
+
+                  {/* Type tag */}
+                  <span
+                    className="hidden sm:inline-flex font-[family-name:var(--font-epilogue)] font-semibold text-[11px] px-2.5 py-1 rounded-full border flex-shrink-0"
+                    style={{
+                      background: ts.bg,
+                      color: ts.text,
+                      borderColor: ts.text,
+                    }}
+                  >
+                    {job.type}
+                  </span>
+
+                  {/* Meta */}
+                  <div className="hidden md:flex flex-col items-end gap-0.5 flex-shrink-0 text-[#A8ADB7]">
+                    <span className="flex items-center gap-1 font-[family-name:var(--font-epilogue)] text-[12px]">
+                      <Eye size={11} />
+                      {job.views ?? 0}
+                    </span>
+                    <span className="flex items-center gap-1 font-[family-name:var(--font-epilogue)] text-[12px]">
+                      <Clock size={11} />
+                      {timeAgo(job.created_at)}
+                    </span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <button
+                      onClick={() => handleFeature(job)}
+                      title={job.isFeatured ? "Unfeature" : "Feature"}
+                      className={`p-2 rounded-lg transition-all duration-200 ${
+                        job.isFeatured
+                          ? "text-[#FFB836] bg-[#FFF8E6] hover:bg-[#FFE8A3]"
+                          : "text-[#A8ADB7] bg-[#F8F8FD] hover:text-[#FFB836] hover:bg-[#FFF8E6]"
+                      }`}
+                    >
+                      <Star
+                        size={15}
+                        fill={job.isFeatured ? "currentColor" : "none"}
+                      />
+                    </button>
+                    <Link
+                      href={`/jobs/${job._id}`}
+                      className="p-2 rounded-lg text-[#A8ADB7] bg-[#F8F8FD] hover:text-[#4640DE] hover:bg-[#F1F0FF] transition-all duration-200"
+                    >
+                      <Eye size={15} />
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(job)}
+                      className="p-2 rounded-lg text-[#A8ADB7] bg-[#F8F8FD] hover:text-[#FF6550] hover:bg-[#FFF4F3] transition-all duration-200"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
