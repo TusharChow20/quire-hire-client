@@ -2,351 +2,186 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Briefcase } from "lucide-react";
+import {
+  ArrowRight,
+  Paintbrush,
+  TrendingUp,
+  Megaphone,
+  Landmark,
+  Monitor,
+  Wrench,
+  Briefcase,
+  Users,
+  AlertCircle,
+  RefreshCw,
+} from "lucide-react";
 
-const CATEGORY_ICONS = {
-  Design: (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <path
-        d="M28 6L34 12L14 32L6 34L8 26L28 6Z"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M24 10L30 16"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
-  Sales: (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <polyline
-        points="6,32 14,22 20,26 28,14 34,18"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <circle cx="34" cy="18" r="3" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  ),
-  Marketing: (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <path
-        d="M32 8C32 8 22 14 10 16H8C6.343 16 5 17.343 5 19V21C5 22.657 6.343 24 8 24H10L13 32H17L15 24C22 25 32 32 32 32V8Z"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M35 14C36.5 16 36.5 24 35 26"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
-  Finance: (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <rect
-        x="4"
-        y="10"
-        width="32"
-        height="22"
-        rx="3"
-        stroke="currentColor"
-        strokeWidth="2.2"
-      />
-      <path d="M4 17H36" stroke="currentColor" strokeWidth="2.2" />
-      <rect
-        x="26"
-        y="21"
-        width="7"
-        height="5"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <path
-        d="M4 10L8 6H32"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  ),
-  Technology: (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <rect
-        x="4"
-        y="6"
-        width="32"
-        height="22"
-        rx="3"
-        stroke="currentColor"
-        strokeWidth="2.2"
-      />
-      <path
-        d="M14 34H26"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M20 28V34"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-      <path d="M4 24H36" stroke="currentColor" strokeWidth="2" opacity="0.4" />
-    </svg>
-  ),
-  Engineering: (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <path
-        d="M14 12L6 20L14 28"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M26 12L34 20L26 28"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <line
-        x1="22"
-        y1="10"
-        x2="18"
-        y2="30"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
-  Business: (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <rect
-        x="4"
-        y="14"
-        width="32"
-        height="22"
-        rx="3"
-        stroke="currentColor"
-        strokeWidth="2.2"
-      />
-      <path
-        d="M14 14V10C14 8.895 14.895 8 16 8H24C25.105 8 26 8.895 26 10V14"
-        stroke="currentColor"
-        strokeWidth="2.2"
-      />
-      <line
-        x1="4"
-        y1="24"
-        x2="36"
-        y2="24"
-        stroke="currentColor"
-        strokeWidth="2"
-        opacity="0.4"
-      />
-      <line
-        x1="18"
-        y1="22"
-        x2="22"
-        y2="22"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-      <line
-        x1="20"
-        y1="20"
-        x2="20"
-        y2="24"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
-  "Human Resource": (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <circle cx="20" cy="12" r="5" stroke="currentColor" strokeWidth="2.2" />
-      <path
-        d="M8 34C8 27.373 13.373 22 20 22C26.627 22 32 27.373 32 34"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-      <circle cx="9" cy="16" r="3.5" stroke="currentColor" strokeWidth="2" />
-      <path
-        d="M2 30C2 25.582 5.134 22 9 22"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <circle cx="31" cy="16" r="3.5" stroke="currentColor" strokeWidth="2" />
-      <path
-        d="M38 30C38 25.582 34.866 22 31 22"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
+// ── Category meta: icon + colours ────────────────────────
+const CATEGORY_META = {
+  Design: { icon: Paintbrush, color: "#7B61FF", bg: "#F0EFFE" },
+  Sales: { icon: TrendingUp, color: "#56CDAD", bg: "#E8F9F0" },
+  Marketing: { icon: Megaphone, color: "#FFB836", bg: "#FFF0E6" },
+  Finance: { icon: Landmark, color: "#26A4FF", bg: "#EEF9FF" },
+  Technology: { icon: Monitor, color: "#FF6550", bg: "#FFE9E9" },
+  Engineering: { icon: Wrench, color: "#4640DE", bg: "#F1F0FF" },
+  Business: { icon: Briefcase, color: "#10B981", bg: "#ECFDF5" },
+  "Human Resource": { icon: Users, color: "#F59E0B", bg: "#FFF7E6" },
 };
+const DEFAULT_META = { icon: Briefcase, color: "#7C8493", bg: "#F0F0F0" };
 
-// Fallback icon for any unknown category
-function FallbackIcon({ initial }) {
-  return (
-    <div className="w-10 h-10 rounded-lg bg-current/10 flex items-center justify-center">
-      <span
-        className="font-bold text-[18px]"
-        style={{ fontFamily: "var(--font-epilogue)" }}
-      >
-        {initial}
-      </span>
-    </div>
-  );
-}
-
+// ── Desktop card ──────────────────────────────────────────
 function CategoryCard({ category, count }) {
-  const icon = CATEGORY_ICONS[category] || (
-    <FallbackIcon initial={category?.[0]?.toUpperCase()} />
-  );
+  const meta = CATEGORY_META[category] || DEFAULT_META;
+  const Icon = meta.icon;
 
   return (
     <Link
       href={`/jobs?category=${encodeURIComponent(category)}`}
-      className="group flex flex-col border border-[#D6DDEB] rounded-lg p-6
-                 transition-all duration-250 ease-in-out
+      className="group flex flex-col border border-[#D6DDEB] rounded-xl p-6
+                 transition-all duration-200 ease-in-out
                  hover:bg-[#4640DE] hover:border-[#4640DE]
                  hover:shadow-[0_8px_30px_rgba(70,64,222,0.25)]
                  hover:-translate-y-0.5"
     >
-      <div className="text-[#4640DE] group-hover:text-white transition-colors duration-250 mb-6">
-        {icon}
+      {/* Icon */}
+      <div
+        className="w-12 h-12 rounded-xl flex items-center justify-center mb-5
+                   transition-all duration-200 group-hover:bg-white/20"
+        style={{ background: meta.bg }}
+      >
+        <Icon
+          size={22}
+          style={{ color: meta.color }}
+          className="transition-all duration-200 group-hover:!text-white"
+        />
       </div>
+
       <p
-        className="font-[family-name:var(--font-epilogue)] font-bold text-[18px]
-                    text-[#25324B] group-hover:text-white transition-colors duration-250 mb-2"
+        className="font-[family-name:var(--font-epilogue)] font-bold text-[17px]
+                    text-[#25324B] group-hover:text-white transition-colors duration-200 mb-1"
       >
         {category}
       </p>
-      <div className="flex items-center gap-2 mt-auto">
+
+      <div className="flex items-center gap-1.5 mt-auto pt-2">
         <span
-          className="font-[family-name:var(--font-epilogue)] text-[14px]
-                         text-[#7C8493] group-hover:text-[#E0DFFF] transition-colors duration-250"
+          className="font-[family-name:var(--font-epilogue)] text-[13px]
+                         text-[#7C8493] group-hover:text-[#C7C4FF] transition-colors duration-200"
         >
-          {count} jobs available
+          {count} {count === 1 ? "job" : "jobs"} available
         </span>
         <ArrowRight
-          size={16}
-          className="text-[#25324B] group-hover:text-white transition-colors duration-250 flex-shrink-0"
+          size={14}
+          className="text-[#D6DDEB] group-hover:text-white transition-colors duration-200 flex-shrink-0"
         />
       </div>
     </Link>
   );
 }
 
-// ── Mobile row variant ────────────────────────────────────────
+// ── Mobile row ────────────────────────────────────────────
 function CategoryRow({ category, count }) {
-  const icon = CATEGORY_ICONS[category] || (
-    <Briefcase size={24} className="text-[#4640DE]" />
-  );
+  const meta = CATEGORY_META[category] || DEFAULT_META;
+  const Icon = meta.icon;
 
   return (
     <Link
       href={`/jobs?category=${encodeURIComponent(category)}`}
-      className="group flex items-center gap-4 border border-[#D6DDEB] rounded-lg px-4 py-4
-                 transition-all duration-250 active:bg-[#4640DE] active:border-[#4640DE]"
+      className="flex items-center gap-4 border border-[#D6DDEB] rounded-xl px-4 py-4
+                 hover:border-[#4640DE] hover:bg-[#F8F8FD] transition-all duration-200"
     >
       <div
-        className="text-[#4640DE] group-active:text-white transition-colors duration-250
-                      flex-shrink-0 w-10 h-10 flex items-center justify-center"
+        className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: meta.bg }}
       >
-        {icon}
+        <Icon size={20} style={{ color: meta.color }} />
       </div>
       <div className="flex-1 min-w-0">
-        <p
-          className="font-[family-name:var(--font-epilogue)] font-bold text-[16px]
-                      text-[#25324B] group-active:text-white transition-colors duration-250"
-        >
+        <p className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#25324B]">
           {category}
         </p>
-        <p
-          className="font-[family-name:var(--font-epilogue)] text-[13px] text-[#7C8493]
-                      group-active:text-[#E0DFFF] transition-colors duration-250 mt-0.5"
-        >
-          {count} jobs available
+        <p className="font-[family-name:var(--font-epilogue)] text-[12px] text-[#7C8493] mt-0.5">
+          {count} {count === 1 ? "job" : "jobs"} available
         </p>
       </div>
-      <ArrowRight
-        size={18}
-        className="text-[#25324B] group-active:text-white transition-colors duration-250 flex-shrink-0"
-      />
+      <ArrowRight size={16} className="text-[#D6DDEB] flex-shrink-0" />
     </Link>
   );
 }
 
+// ── Skeleton ──────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div className="border border-[#D6DDEB] rounded-lg p-6 animate-pulse">
-      <div className="w-10 h-10 bg-[#F0F0F0] rounded-lg mb-6" />
-      <div className="h-5 bg-[#F0F0F0] rounded mb-3 w-2/3" />
+    <div className="border border-[#D6DDEB] rounded-xl p-6 animate-pulse">
+      <div className="w-12 h-12 bg-[#F0F0F0] rounded-xl mb-5" />
+      <div className="h-5 bg-[#F0F0F0] rounded mb-2 w-2/3" />
       <div className="h-4 bg-[#F0F0F0] rounded w-1/2" />
     </div>
   );
 }
 
+// ── Main component ────────────────────────────────────────
 export default function ExploreCategories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchCategories = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // ── CRITICAL: make sure NEXT_PUBLIC_API_URL is set in .env.local ──
+      // e.g.  NEXT_PUBLIC_API_URL=http://localhost:5000
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+      if (!apiUrl) {
+        throw new Error(
+          "NEXT_PUBLIC_API_URL is not set. Add it to .env.local and restart the dev server.",
+        );
+      }
+
+      const res = await fetch(`${apiUrl}/api/jobs/categories`);
+
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}: ${res.statusText}`);
+      }
+
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.message || "API returned success: false");
+      }
+
+      setCategories(data.categories || []);
+    } catch (err) {
+      console.error("❌ ExploreCategories fetch error:", err.message);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/jobs/categories`,
-        );
-        const data = await res.json();
-        if (data.success) setCategories(data.categories);
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    fetchCategories();
   }, []);
 
-  // Sort: put known categories first (those with hardcoded icons), then unknown
+  // Known categories first, then by count descending
   const sorted = [...categories].sort((a, b) => {
-    const aKnown = !!CATEGORY_ICONS[a.category];
-    const bKnown = !!CATEGORY_ICONS[b.category];
+    const aKnown = !!CATEGORY_META[a.category];
+    const bKnown = !!CATEGORY_META[b.category];
     if (aKnown && !bKnown) return -1;
     if (!aKnown && bKnown) return 1;
-    return b.count - a.count; // within same group, sort by count desc
+    return b.count - a.count;
   });
 
   return (
     <section className="bg-white py-16 sm:py-20">
       <div className="max-w-[1200px] mx-auto px-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-5 sm:mb-12">
+        <div className="flex items-center justify-between mb-8 sm:mb-12">
           <h2
             className="font-[family-name:var(--font-epilogue)] font-extrabold
-                         text-[20px] sm:text-[28px] md:text-[32px] text-[#25324B]"
+                         text-[22px] sm:text-[28px] md:text-[32px] text-[#25324B]"
           >
             Explore by <span className="text-[#26A4FF]">category</span>
           </h2>
@@ -355,19 +190,53 @@ export default function ExploreCategories() {
             className="hidden sm:inline-flex items-center gap-1.5 font-[family-name:var(--font-epilogue)]
                        font-semibold text-[15px] text-[#4640DE] hover:underline"
           >
-            Show all jobs
-            <ArrowRight size={16} />
+            Show all jobs <ArrowRight size={16} />
           </Link>
         </div>
 
-        {/* Desktop grid */}
+        {/* ── Error state ── */}
+        {error && (
+          <div className="mb-6 flex items-start gap-3 bg-[#FFF4F3] border border-[#FFD5D0] rounded-xl p-4">
+            <AlertCircle
+              size={18}
+              className="text-[#FF6550] flex-shrink-0 mt-0.5"
+            />
+            <div className="flex-1">
+              <p className="font-[family-name:var(--font-epilogue)] font-bold text-[14px] text-[#FF6550]">
+                Failed to load categories
+              </p>
+              <p className="font-[family-name:var(--font-epilogue)] text-[13px] text-[#515B6F] mt-0.5">
+                {error}
+              </p>
+            </div>
+            <button
+              onClick={fetchCategories}
+              className="flex items-center gap-1.5 font-[family-name:var(--font-epilogue)] font-semibold
+                         text-[13px] text-[#4640DE] hover:underline flex-shrink-0"
+            >
+              <RefreshCw size={13} /> Retry
+            </button>
+          </div>
+        )}
+
+        {/* ── Desktop grid ── */}
         <div className="hidden sm:grid grid-cols-4 gap-4">
           {loading ? (
             [...Array(8)].map((_, i) => <SkeletonCard key={i} />)
-          ) : sorted.length === 0 ? (
+          ) : sorted.length === 0 && !error ? (
             <div className="col-span-4 py-16 text-center">
-              <p className="text-[#7C8493] font-[family-name:var(--font-epilogue)]">
-                No categories yet. Seed the database to populate this section.
+              <p className="font-[family-name:var(--font-epilogue)] font-semibold text-[15px] text-[#7C8493] mb-2">
+                No categories found
+              </p>
+              <p className="font-[family-name:var(--font-epilogue)] text-[13px] text-[#A8ADB7]">
+                Make sure your database has jobs with a{" "}
+                <code className="bg-[#F4F4F6] px-1.5 py-0.5 rounded text-[#4640DE]">
+                  category
+                </code>{" "}
+                field, or run the seed route:{" "}
+                <code className="bg-[#F4F4F6] px-1.5 py-0.5 rounded text-[#4640DE]">
+                  POST /api/seed
+                </code>
               </p>
             </div>
           ) : (
@@ -377,15 +246,15 @@ export default function ExploreCategories() {
           )}
         </div>
 
-        {/* Mobile list */}
+        {/* ── Mobile list ── */}
         <div className="sm:hidden flex flex-col gap-3">
           {loading
             ? [...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-4 border border-[#D6DDEB] rounded-lg px-4 py-4 animate-pulse"
+                  className="flex items-center gap-4 border border-[#D6DDEB] rounded-xl px-4 py-4 animate-pulse"
                 >
-                  <div className="w-10 h-10 bg-[#F0F0F0] rounded-lg flex-shrink-0" />
+                  <div className="w-11 h-11 bg-[#F0F0F0] rounded-xl flex-shrink-0" />
                   <div className="flex-1">
                     <div className="h-4 bg-[#F0F0F0] rounded mb-2 w-1/2" />
                     <div className="h-3 bg-[#F0F0F0] rounded w-1/3" />
@@ -397,15 +266,14 @@ export default function ExploreCategories() {
               ))}
         </div>
 
-        {/* Show all — mobile */}
+        {/* Mobile "show all" */}
         <div className="sm:hidden mt-6">
           <Link
             href="/jobs"
             className="inline-flex items-center gap-1.5 font-[family-name:var(--font-epilogue)]
                        font-semibold text-[15px] text-[#4640DE]"
           >
-            Show all jobs
-            <ArrowRight size={16} />
+            Show all jobs <ArrowRight size={16} />
           </Link>
         </div>
       </div>
