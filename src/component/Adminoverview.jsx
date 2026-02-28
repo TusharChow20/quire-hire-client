@@ -77,7 +77,7 @@ export default function AdminOverview() {
   const fetchData = async () => {
     try {
       const [sRes, jRes] = await Promise.all([
-        fetch(`${API}/api/admin/stats?`),
+        fetch(`${API}/api/admin/stats`),
         fetch(`${API}/api/jobs?limit=6&sortBy=newest`),
       ]);
       const sd = await sRes.json();

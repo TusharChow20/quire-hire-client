@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useForm, useFieldArray, useWatch } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import {
   ArrowLeft,
   Plus,
@@ -55,6 +55,41 @@ const AVAILABLE_TAGS = [
   "Startup",
 ];
 
+function Section({ title, icon: Icon, children }) {
+  return (
+    <div className="bg-white border border-[#E7E7F5] rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+      <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-[#F4F4F6]">
+        <div className="w-8 h-8 rounded-lg bg-[#F1F0FF] flex items-center justify-center">
+          <Icon size={16} className="text-[#4640DE]" />
+        </div>
+        <h2 className="font-[family-name:var(--font-epilogue)] font-bold text-[16px] text-[#25324B]">
+          {title}
+        </h2>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function ErrMsg({ err }) {
+  if (!err) return null;
+  return (
+    <p className="mt-1.5 flex items-center gap-1 font-[family-name:var(--font-epilogue)] text-[12px] text-[#FF6550]">
+      <AlertCircle size={11} />
+      {err.message}
+    </p>
+  );
+}
+
+const inputCls = (hasErr) =>
+  `w-full px-4 py-3 border rounded-xl font-[family-name:var(--font-epilogue)] text-[14px]
+   text-[#25324B] placeholder:text-[#A8ADB7] bg-white focus:outline-none focus:ring-2
+   transition-all duration-200 ${
+     hasErr
+       ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+       : "border-[#D6DDEB] focus:border-[#4640DE] focus:ring-[#4640DE]/10"
+   }`;
+
 export default function CreateJobPage() {
   const router = useRouter();
   const [serverError, setServerError] = useState("");
@@ -76,8 +111,9 @@ export default function CreateJobPage() {
       requirements: [{ value: "" }],
     },
   });
-  const watchedType = useWatch({ control, name: "type" });
-  const watchedFeatured = useWatch({ control, name: "isFeatured" });
+
+  const watchedType = watch("type");
+  const watchedFeatured = watch("isFeatured");
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -100,14 +136,12 @@ export default function CreateJobPage() {
         salary_max: data.salary_max ? parseInt(data.salary_max) : null,
         isFeatured: !!data.isFeatured,
       };
-
       const res = await fetch(`${API}/api/jobs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       const json = await res.json();
-
       if (res.ok && json.success) {
         setSuccess(true);
         setTimeout(() => router.push("/dashboard/jobs"), 1800);
@@ -119,39 +153,6 @@ export default function CreateJobPage() {
     }
   };
 
-  // ── Shared helpers ─────────────────────────────────────────────────
-  const inputCls = (hasErr) =>
-    `w-full px-4 py-3 border rounded-xl font-[family-name:var(--font-epilogue)] text-[14px]
-     text-[#25324B] placeholder:text-[#A8ADB7] bg-white focus:outline-none focus:ring-2
-     transition-all duration-200 ${
-       hasErr
-         ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-         : "border-[#D6DDEB] focus:border-[#4640DE] focus:ring-[#4640DE]/10"
-     }`;
-
-  const Section = ({ title, icon: Icon, children }) => (
-    <div className="bg-white border border-[#E7E7F5] rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
-      <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-[#F4F4F6]">
-        <div className="w-8 h-8 rounded-lg bg-[#F1F0FF] flex items-center justify-center">
-          <Icon size={16} className="text-[#4640DE]" />
-        </div>
-        <h2 className="font-[family-name:var(--font-epilogue)] font-bold text-[16px] text-[#25324B]">
-          {title}
-        </h2>
-      </div>
-      {children}
-    </div>
-  );
-
-  const ErrMsg = ({ err }) =>
-    err ? (
-      <p className="mt-1.5 flex items-center gap-1 font-[family-name:var(--font-epilogue)] text-[12px] text-[#FF6550]">
-        <AlertCircle size={11} />
-        {err.message}
-      </p>
-    ) : null;
-
-  // ── Success screen ─────────────────────────────────────────────────
   if (success)
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -189,7 +190,6 @@ export default function CreateJobPage() {
         </div>
       </div>
 
-      {/* Server error */}
       {serverError && (
         <div className="flex items-start gap-3 bg-[#FFF4F3] border border-[#FFD5D0] rounded-xl p-4">
           <AlertCircle
@@ -203,10 +203,9 @@ export default function CreateJobPage() {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-        {/* ── Basic Info ────────────────────────────────────────────── */}
+        {/* ── Basic Info ── */}
         <Section title="Basic Information" icon={Briefcase}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Title */}
             <div className="sm:col-span-2">
               <label className="font-[family-name:var(--font-epilogue)] font-semibold text-[13px] text-[#25324B] block mb-1.5">
                 Job Title <span className="text-[#FF6550]">*</span>
@@ -220,7 +219,6 @@ export default function CreateJobPage() {
               <ErrMsg err={errors.title} />
             </div>
 
-            {/* Company */}
             <div>
               <label className="font-[family-name:var(--font-epilogue)] font-semibold text-[13px] text-[#25324B] block mb-1.5">
                 Company <span className="text-[#FF6550]">*</span>
@@ -240,7 +238,6 @@ export default function CreateJobPage() {
               <ErrMsg err={errors.company} />
             </div>
 
-            {/* Location */}
             <div>
               <label className="font-[family-name:var(--font-epilogue)] font-semibold text-[13px] text-[#25324B] block mb-1.5">
                 Location <span className="text-[#FF6550]">*</span>
@@ -262,7 +259,6 @@ export default function CreateJobPage() {
               <ErrMsg err={errors.location} />
             </div>
 
-            {/* Category */}
             <div>
               <label className="font-[family-name:var(--font-epilogue)] font-semibold text-[13px] text-[#25324B] block mb-1.5">
                 Category <span className="text-[#FF6550]">*</span>
@@ -279,38 +275,35 @@ export default function CreateJobPage() {
               <ErrMsg err={errors.category} />
             </div>
 
-            {/* Job Type */}
             <div>
               <label className="font-[family-name:var(--font-epilogue)] font-semibold text-[13px] text-[#25324B] block mb-1.5">
                 Job Type <span className="text-[#FF6550]">*</span>
               </label>
               <div className="flex flex-wrap gap-2">
-                {JOB_TYPES.map((type) => {
-                  const active = watchedType === type;
-                  return (
-                    <label key={type} className="cursor-pointer">
-                      <input
-                        type="radio"
-                        value={type}
-                        {...register("type")}
-                        className="sr-only"
-                      />
-                      <span
-                        className={`inline-block font-[family-name:var(--font-epilogue)] font-semibold text-[13px] px-3.5 py-2 rounded-xl border-2 transition-all duration-200 ${
-                          active
-                            ? "bg-[#4640DE] text-white border-[#4640DE]"
-                            : "bg-white text-[#515B6F] border-[#D6DDEB] hover:border-[#4640DE] hover:text-[#4640DE]"
-                        }`}
-                      >
-                        {type}
-                      </span>
+                {JOB_TYPES.map((type) => (
+                  <div key={type}>
+                    <input
+                      type="radio"
+                      id={`type-${type}`}
+                      value={type}
+                      {...register("type")}
+                      className="sr-only"
+                    />
+                    <label
+                      htmlFor={`type-${type}`}
+                      className={`cursor-pointer inline-block font-[family-name:var(--font-epilogue)] font-semibold text-[13px] px-3.5 py-2 rounded-xl border-2 transition-all duration-200 ${
+                        watchedType === type
+                          ? "bg-[#4640DE] text-white border-[#4640DE]"
+                          : "bg-white text-[#515B6F] border-[#D6DDEB] hover:border-[#4640DE] hover:text-[#4640DE]"
+                      }`}
+                    >
+                      {type}
                     </label>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Logo URL */}
             <div className="sm:col-span-2">
               <label className="font-[family-name:var(--font-epilogue)] font-semibold text-[13px] text-[#25324B] block mb-1.5">
                 Company Logo URL{" "}
@@ -332,10 +325,9 @@ export default function CreateJobPage() {
           </div>
         </Section>
 
-        {/* ── Description & Requirements ────────────────────────────── */}
+        {/* ── Description & Requirements ── */}
         <Section title="Description & Requirements" icon={FileText}>
           <div className="space-y-5">
-            {/* Description */}
             <div>
               <label className="font-[family-name:var(--font-epilogue)] font-semibold text-[13px] text-[#25324B] block mb-1.5">
                 Job Description <span className="text-[#FF6550]">*</span>
@@ -355,7 +347,6 @@ export default function CreateJobPage() {
               <ErrMsg err={errors.description} />
             </div>
 
-            {/* Requirements */}
             <div>
               <label className="font-[family-name:var(--font-epilogue)] font-semibold text-[13px] text-[#25324B] block mb-2">
                 Requirements
@@ -395,7 +386,7 @@ export default function CreateJobPage() {
           </div>
         </Section>
 
-        {/* ── Salary ───────────────────────────────────────────────── */}
+        {/* ── Salary ── */}
         <Section title="Salary & Compensation" icon={DollarSign}>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
@@ -442,9 +433,8 @@ export default function CreateJobPage() {
           </div>
         </Section>
 
-        {/* ── Tags & Settings ──────────────────────────────────────── */}
+        {/* ── Tags & Settings ── */}
         <Section title="Tags & Settings" icon={Tag}>
-          {/* Tags */}
           <div className="mb-5">
             <label className="font-[family-name:var(--font-epilogue)] font-semibold text-[13px] text-[#25324B] block mb-2">
               Tags{" "}
@@ -453,27 +443,23 @@ export default function CreateJobPage() {
               </span>
             </label>
             <div className="flex flex-wrap gap-2">
-              {AVAILABLE_TAGS.map((tag) => {
-                const active = selectedTags.includes(tag);
-                return (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => toggleTag(tag)}
-                    className={`font-[family-name:var(--font-epilogue)] font-semibold text-[13px] px-3.5 py-1.5 rounded-full border-2 transition-all duration-200 ${
-                      active
-                        ? "bg-[#4640DE] text-white border-[#4640DE]"
-                        : "bg-white text-[#515B6F] border-[#D6DDEB] hover:border-[#4640DE] hover:text-[#4640DE]"
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                );
-              })}
+              {AVAILABLE_TAGS.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => toggleTag(tag)}
+                  className={`font-[family-name:var(--font-epilogue)] font-semibold text-[13px] px-3.5 py-1.5 rounded-full border-2 transition-all duration-200 ${
+                    selectedTags.includes(tag)
+                      ? "bg-[#4640DE] text-white border-[#4640DE]"
+                      : "bg-white text-[#515B6F] border-[#D6DDEB] hover:border-[#4640DE] hover:text-[#4640DE]"
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Featured checkbox */}
           <label className="flex items-center gap-4 p-4 border-2 border-[#D6DDEB] rounded-xl cursor-pointer hover:border-[#FFB836] transition-colors group">
             <input
               type="checkbox"
@@ -505,7 +491,7 @@ export default function CreateJobPage() {
           </label>
         </Section>
 
-        {/* ── Submit ───────────────────────────────────────────────── */}
+        {/* ── Submit ── */}
         <div className="flex items-center gap-4 pb-8">
           <Link
             href="/dashboard/jobs"

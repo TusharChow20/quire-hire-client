@@ -10,9 +10,6 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { data: session, status } = useSession();
-  if (status === "loading") {
-    return null;
-  }
 
   const isAuthenticated = status === "authenticated";
   const isAdmin = session?.user?.role === "admin";
@@ -85,7 +82,7 @@ export default function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
-          {isAuthenticated ? (
+          {status === "loading" ? null : isAuthenticated ? (
             <>
               {/* Role-aware dashboard button */}
               <Link

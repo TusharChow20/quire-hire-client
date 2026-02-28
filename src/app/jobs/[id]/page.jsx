@@ -35,7 +35,6 @@ import {
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-// ── Helpers ───────────────────────────────────────────────
 const TAG_STYLES = {
   "Full Time": { bg: "#E8F9F0", text: "#56CDAD" },
   "Part Time": { bg: "#FFF0E6", text: "#FFB836" },
@@ -78,7 +77,8 @@ function timeAgo(iso) {
   return `Posted ${Math.floor(days / 30)} months ago`;
 }
 
-// ── Company Logo ──────────────────────────────────────────
+// ── ALL components defined OUTSIDE to prevent remount/focus-steal ──
+
 function CompanyLogo({ logo, company, size = 72 }) {
   const [imgErr, setImgErr] = useState(false);
   const colors = [
@@ -117,7 +117,6 @@ function CompanyLogo({ logo, company, size = 72 }) {
   );
 }
 
-// ── Confirm Delete Modal ──────────────────────────────────
 function ConfirmDeleteModal({ job, onClose, onConfirm, loading }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -173,7 +172,6 @@ function ConfirmDeleteModal({ job, onClose, onConfirm, loading }) {
   );
 }
 
-// ── Admin Action Bar ──────────────────────────────────────
 function AdminActionBar({
   job,
   onFeatureToggle,
@@ -181,10 +179,7 @@ function AdminActionBar({
   featureLoading,
 }) {
   return (
-    <div
-      className="bg-[#25324B] rounded-2xl px-5 py-4 mb-5 flex flex-col sm:flex-row
-                    sm:items-center gap-3 relative overflow-hidden"
-    >
+    <div className="bg-[#25324B] rounded-2xl px-5 py-4 mb-5 flex flex-col sm:flex-row sm:items-center gap-3 relative overflow-hidden">
       <div
         className="absolute inset-0 opacity-[0.04]"
         style={{
@@ -193,7 +188,6 @@ function AdminActionBar({
           backgroundSize: "20px 20px",
         }}
       />
-
       <div className="flex items-center gap-2.5 relative z-10">
         <div className="w-8 h-8 rounded-lg bg-[#4640DE] flex items-center justify-center flex-shrink-0">
           <ShieldCheck size={16} className="text-white" />
@@ -207,15 +201,12 @@ function AdminActionBar({
           </p>
         </div>
       </div>
-
       <div className="flex items-center gap-3 sm:ml-auto relative z-10 flex-wrap">
-        {/* Feature / Unfeature toggle */}
         <button
           onClick={onFeatureToggle}
           disabled={featureLoading}
           className={`flex items-center gap-2 font-[family-name:var(--font-epilogue)] font-bold
-                      text-[14px] px-5 py-2.5 rounded-xl border-2 transition-all duration-200
-                      disabled:opacity-60
+                      text-[14px] px-5 py-2.5 rounded-xl border-2 transition-all duration-200 disabled:opacity-60
                       ${
                         job.isFeatured
                           ? "border-[#FFB836] text-[#FFB836] hover:bg-[#FFB836] hover:text-[#25324B]"
@@ -234,13 +225,10 @@ function AdminActionBar({
             </>
           )}
         </button>
-
-        {/* Delete */}
         <button
           onClick={onDeleteClick}
           className="flex items-center gap-2 font-[family-name:var(--font-epilogue)] font-bold
-                     text-[14px] text-white bg-[#FF6550] px-5 py-2.5 rounded-xl
-                     hover:bg-[#e54f41] transition-colors duration-200"
+                     text-[14px] text-white bg-[#FF6550] px-5 py-2.5 rounded-xl hover:bg-[#e54f41] transition-colors"
         >
           <Trash2 size={15} /> Delete Job
         </button>
@@ -249,7 +237,78 @@ function AdminActionBar({
   );
 }
 
-// ── Apply Form (users only) ───────────────────────────────
+// ✅ Field defined OUTSIDE ApplyForm — this was the main focus-stealing culprit
+function Field({
+  label,
+  name,
+  type = "text",
+  placeholder,
+  icon: Icon,
+  required,
+  textarea,
+  hint,
+  value,
+  onChange,
+  error,
+  readOnly,
+}) {
+  const baseCls = `w-full px-4 py-3 border rounded-xl font-[family-name:var(--font-epilogue)] text-[14px]
+    text-[#25324B] placeholder-[#A8ADB7] outline-none transition-all duration-200
+    ${
+      error
+        ? "border-[#FF6550] bg-[#FFF4F3] focus:ring-2 focus:ring-[#FF6550]/10"
+        : readOnly
+          ? "border-[#E7E7F5] bg-[#F8F8FD] text-[#A8ADB7] cursor-not-allowed"
+          : "border-[#D6DDEB] focus:border-[#4640DE] focus:ring-2 focus:ring-[#4640DE]/10"
+    }`;
+
+  return (
+    <div>
+      <label className="flex items-center gap-1.5 font-[family-name:var(--font-epilogue)] font-semibold text-[13px] text-[#25324B] mb-1.5">
+        {Icon && <Icon size={13} className="text-[#A8ADB7]" />}
+        {label}
+        {required && <span className="text-[#FF6550]">*</span>}
+        {/* ✅ Show a lock badge on read-only fields */}
+        {readOnly && (
+          <span className="ml-auto text-[11px] font-normal text-[#A8ADB7] bg-[#F4F4F6] px-2 py-0.5 rounded-full">
+            auto-filled
+          </span>
+        )}
+      </label>
+      {textarea ? (
+        <textarea
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          rows={4}
+          readOnly={readOnly}
+          className={`${baseCls} resize-none`}
+        />
+      ) : (
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          readOnly={readOnly}
+          className={baseCls}
+        />
+      )}
+      {hint && !error && (
+        <p className="mt-1 font-[family-name:var(--font-epilogue)] text-[12px] text-[#A8ADB7]">
+          {hint}
+        </p>
+      )}
+      {error && (
+        <p className="mt-1 flex items-center gap-1 font-[family-name:var(--font-epilogue)] text-[12px] text-[#FF6550]">
+          <AlertCircle size={11} />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function ApplyForm({ job, session, onSuccess }) {
   const [form, setForm] = useState({
     name: session?.user?.name || "",
@@ -331,7 +390,6 @@ function ApplyForm({ job, session, onSuccess }) {
     }
   };
 
-  // Success screen
   if (submitted) {
     return (
       <div className="text-center py-10">
@@ -351,15 +409,13 @@ function ApplyForm({ job, session, onSuccess }) {
         <div className="flex gap-3 justify-center flex-wrap">
           <Link
             href="/dashboard"
-            className="font-[family-name:var(--font-epilogue)] font-bold text-[14px] text-[#4640DE]
-                       border-2 border-[#4640DE] px-6 py-2.5 rounded-xl hover:bg-[#F1F0FF] transition-colors"
+            className="font-[family-name:var(--font-epilogue)] font-bold text-[14px] text-[#4640DE] border-2 border-[#4640DE] px-6 py-2.5 rounded-xl hover:bg-[#F1F0FF] transition-colors"
           >
             View Dashboard
           </Link>
           <Link
             href="/jobs"
-            className="font-[family-name:var(--font-epilogue)] font-bold text-[14px] text-white
-                       bg-[#4640DE] px-6 py-2.5 rounded-xl hover:bg-[#3730C4] transition-colors"
+            className="font-[family-name:var(--font-epilogue)] font-bold text-[14px] text-white bg-[#4640DE] px-6 py-2.5 rounded-xl hover:bg-[#3730C4] transition-colors"
           >
             Browse More Jobs
           </Link>
@@ -368,7 +424,6 @@ function ApplyForm({ job, session, onSuccess }) {
     );
   }
 
-  // Not logged in → sign-in prompt
   if (!session) {
     return (
       <div className="text-center py-10">
@@ -384,15 +439,13 @@ function ApplyForm({ job, session, onSuccess }) {
         <div className="flex gap-3 justify-center">
           <Link
             href="/login"
-            className="font-[family-name:var(--font-epilogue)] font-bold text-[14px] text-[#4640DE]
-                       border-2 border-[#4640DE] px-6 py-3 rounded-xl hover:bg-[#F1F0FF] transition-colors"
+            className="font-[family-name:var(--font-epilogue)] font-bold text-[14px] text-[#4640DE] border-2 border-[#4640DE] px-6 py-3 rounded-xl hover:bg-[#F1F0FF] transition-colors"
           >
             Log In
           </Link>
           <Link
             href="/signup"
-            className="font-[family-name:var(--font-epilogue)] font-bold text-[14px] text-white
-                       bg-[#4640DE] px-6 py-3 rounded-xl hover:bg-[#3730C4] transition-colors"
+            className="font-[family-name:var(--font-epilogue)] font-bold text-[14px] text-white bg-[#4640DE] px-6 py-3 rounded-xl hover:bg-[#3730C4] transition-colors"
           >
             Sign Up Free
           </Link>
@@ -400,69 +453,6 @@ function ApplyForm({ job, session, onSuccess }) {
       </div>
     );
   }
-
-  // Form field helper
-  const Field = ({
-    label,
-    name,
-    type = "text",
-    placeholder,
-    icon: Icon,
-    required,
-    textarea,
-    hint,
-  }) => (
-    <div>
-      <label
-        className="flex items-center gap-1.5 font-[family-name:var(--font-epilogue)] font-semibold
-                         text-[13px] text-[#25324B] mb-1.5"
-      >
-        {Icon && <Icon size={13} className="text-[#A8ADB7]" />}
-        {label}
-        {required && <span className="text-[#FF6550]">*</span>}
-      </label>
-      {textarea ? (
-        <textarea
-          value={form[name]}
-          onChange={(e) => set(name, e.target.value)}
-          placeholder={placeholder}
-          rows={4}
-          className={`w-full px-4 py-3 border rounded-xl font-[family-name:var(--font-epilogue)] text-[14px]
-                       text-[#25324B] placeholder-[#A8ADB7] outline-none resize-none transition-all duration-200
-                       ${
-                         errors[name]
-                           ? "border-[#FF6550] bg-[#FFF4F3] focus:ring-2 focus:ring-[#FF6550]/10"
-                           : "border-[#D6DDEB] focus:border-[#4640DE] focus:ring-2 focus:ring-[#4640DE]/10"
-                       }`}
-        />
-      ) : (
-        <input
-          type={type}
-          value={form[name]}
-          onChange={(e) => set(name, e.target.value)}
-          placeholder={placeholder}
-          className={`w-full px-4 py-3 border rounded-xl font-[family-name:var(--font-epilogue)] text-[14px]
-                       text-[#25324B] placeholder-[#A8ADB7] outline-none transition-all duration-200
-                       ${
-                         errors[name]
-                           ? "border-[#FF6550] bg-[#FFF4F3] focus:ring-2 focus:ring-[#FF6550]/10"
-                           : "border-[#D6DDEB] focus:border-[#4640DE] focus:ring-2 focus:ring-[#4640DE]/10"
-                       }`}
-        />
-      )}
-      {hint && !errors[name] && (
-        <p className="mt-1 font-[family-name:var(--font-epilogue)] text-[12px] text-[#A8ADB7]">
-          {hint}
-        </p>
-      )}
-      {errors[name] && (
-        <p className="mt-1 flex items-center gap-1 font-[family-name:var(--font-epilogue)] text-[12px] text-[#FF6550]">
-          <AlertCircle size={11} />
-          {errors[name]}
-        </p>
-      )}
-    </div>
-  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -478,12 +468,17 @@ function ApplyForm({ job, session, onSuccess }) {
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* ✅ Name and Email are read-only — pre-filled from session */}
         <Field
           label="Full Name"
           name="name"
           icon={User}
           required
           placeholder="Jane Doe"
+          value={form.name}
+          onChange={(e) => set("name", e.target.value)}
+          error={errors.name}
+          readOnly={true}
         />
         <Field
           label="Email"
@@ -492,6 +487,10 @@ function ApplyForm({ job, session, onSuccess }) {
           required
           type="email"
           placeholder="jane@email.com"
+          value={form.email}
+          onChange={(e) => set("email", e.target.value)}
+          error={errors.email}
+          readOnly={true}
         />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -501,6 +500,9 @@ function ApplyForm({ job, session, onSuccess }) {
           icon={Phone}
           placeholder="+1 (555) 000-0000"
           hint="Optional"
+          value={form.phone}
+          onChange={(e) => set("phone", e.target.value)}
+          error={errors.phone}
         />
         <Field
           label="Resume Link"
@@ -509,6 +511,9 @@ function ApplyForm({ job, session, onSuccess }) {
           required
           placeholder="https://drive.google.com/…"
           hint="Google Drive, Dropbox, or any public link"
+          value={form.resume_link}
+          onChange={(e) => set("resume_link", e.target.value)}
+          error={errors.resume_link}
         />
       </div>
       <Field
@@ -518,6 +523,9 @@ function ApplyForm({ job, session, onSuccess }) {
         textarea
         placeholder="Tell us why you're excited about this role…"
         hint="Optional but recommended (min. 10 characters)"
+        value={form.cover_note}
+        onChange={(e) => set("cover_note", e.target.value)}
+        error={errors.cover_note}
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field
@@ -526,6 +534,9 @@ function ApplyForm({ job, session, onSuccess }) {
           icon={Linkedin}
           placeholder="https://linkedin.com/in/…"
           hint="Optional"
+          value={form.linkedin_url}
+          onChange={(e) => set("linkedin_url", e.target.value)}
+          error={errors.linkedin_url}
         />
         <Field
           label="Portfolio / Website"
@@ -533,6 +544,9 @@ function ApplyForm({ job, session, onSuccess }) {
           icon={Globe}
           placeholder="https://yourportfolio.com"
           hint="Optional"
+          value={form.portfolio_url}
+          onChange={(e) => set("portfolio_url", e.target.value)}
+          error={errors.portfolio_url}
         />
       </div>
       <button
@@ -572,7 +586,6 @@ export default function JobDetailPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Role flags — derived cleanly from session
   const isAdmin = session?.user?.role === "admin";
   const isUser = session?.user?.role === "user";
 
@@ -581,7 +594,6 @@ export default function JobDetailPage() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  // Fetch job on mount
   useEffect(() => {
     if (!id) return;
     (async () => {
@@ -598,7 +610,6 @@ export default function JobDetailPage() {
     })();
   }, [id]);
 
-  // Feature / Unfeature
   const handleFeatureToggle = async () => {
     if (!job) return;
     setFeatureLoading(true);
@@ -606,9 +617,7 @@ export default function JobDetailPage() {
       const res = await fetch(`${API}/api/jobs/${job._id}/featured`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          isFeatured: !job.isFeatured,
-        }),
+        body: JSON.stringify({ isFeatured: !job.isFeatured }),
       });
       const data = await res.json();
       if (data.success) {
@@ -624,7 +633,6 @@ export default function JobDetailPage() {
     }
   };
 
-  // Delete job
   const handleDelete = async () => {
     setDeleteLoading(true);
     try {
@@ -647,7 +655,6 @@ export default function JobDetailPage() {
     }
   };
 
-  // ── Loading ───────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8F8FD] pt-16">
@@ -678,7 +685,6 @@ export default function JobDetailPage() {
     );
   }
 
-  // ── Error ─────────────────────────────────────────────
   if (error || !job) {
     return (
       <div className="min-h-screen bg-[#F8F8FD] pt-16 flex items-center justify-center">
@@ -708,7 +714,6 @@ export default function JobDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#F8F8FD] pt-16">
-      {/* Toast */}
       {toast && (
         <div
           className={`fixed top-20 right-4 z-50 flex items-center gap-2.5 px-5 py-3.5 rounded-xl
@@ -724,7 +729,6 @@ export default function JobDetailPage() {
         </div>
       )}
 
-      {/* Delete confirm modal */}
       {showDeleteModal && (
         <ConfirmDeleteModal
           job={job}
@@ -735,7 +739,6 @@ export default function JobDetailPage() {
       )}
 
       <div className="max-w-[900px] mx-auto px-6 py-8 sm:py-12">
-        {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-6 font-[family-name:var(--font-epilogue)] text-[13px]">
           <Link
             href="/jobs"
@@ -751,7 +754,6 @@ export default function JobDetailPage() {
           </span>
         </div>
 
-        {/* ── ADMIN ONLY: action bar ── */}
         {isAdmin && (
           <AdminActionBar
             job={job}
@@ -761,20 +763,13 @@ export default function JobDetailPage() {
           />
         )}
 
-        {/* ── Hero card ── */}
-        <div
-          className="bg-white border border-[#E7E7F5] rounded-2xl p-6 sm:p-8 mb-5
-                        shadow-[0_2px_20px_rgba(0,0,0,0.04)]"
-        >
+        <div className="bg-white border border-[#E7E7F5] rounded-2xl p-6 sm:p-8 mb-5 shadow-[0_2px_20px_rgba(0,0,0,0.04)]">
           <div className="flex flex-col sm:flex-row sm:items-start gap-5">
             <CompanyLogo logo={job.logo} company={job.company} size={72} />
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h1
-                    className="font-[family-name:var(--font-epilogue)] font-extrabold
-                                  text-[24px] sm:text-[28px] text-[#25324B] leading-tight mb-1"
-                  >
+                  <h1 className="font-[family-name:var(--font-epilogue)] font-extrabold text-[24px] sm:text-[28px] text-[#25324B] leading-tight mb-1">
                     {job.title}
                   </h1>
                   <div className="flex flex-wrap items-center gap-2 text-[14px] font-[family-name:var(--font-epilogue)]">
@@ -795,15 +790,11 @@ export default function JobDetailPage() {
                   </div>
                 </div>
                 {job.isFeatured && (
-                  <span
-                    className="flex items-center gap-1.5 text-[12px] font-bold text-[#FFB836]
-                                   bg-[#FFF8E6] px-3 py-1.5 rounded-full border border-[#FFE8A3]"
-                  >
+                  <span className="flex items-center gap-1.5 text-[12px] font-bold text-[#FFB836] bg-[#FFF8E6] px-3 py-1.5 rounded-full border border-[#FFE8A3]">
                     <Star size={11} fill="currentColor" /> Featured
                   </span>
                 )}
               </div>
-              {/* Tags */}
               <div className="flex flex-wrap gap-2 mt-4">
                 {job.type &&
                   (() => {
@@ -844,7 +835,6 @@ export default function JobDetailPage() {
             </div>
           </div>
 
-          {/* Stats strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-[#F4F4F6]">
             {[
               {
@@ -895,15 +885,8 @@ export default function JobDetailPage() {
           </div>
         </div>
 
-        {/* ── Description ── */}
-        <div
-          className="bg-white border border-[#E7E7F5] rounded-2xl p-6 sm:p-8 mb-5
-                        shadow-[0_2px_20px_rgba(0,0,0,0.04)]"
-        >
-          <h2
-            className="font-[family-name:var(--font-epilogue)] font-extrabold text-[20px] text-[#25324B]
-                          mb-4 flex items-center gap-2"
-          >
+        <div className="bg-white border border-[#E7E7F5] rounded-2xl p-6 sm:p-8 mb-5 shadow-[0_2px_20px_rgba(0,0,0,0.04)]">
+          <h2 className="font-[family-name:var(--font-epilogue)] font-extrabold text-[20px] text-[#25324B] mb-4 flex items-center gap-2">
             <FileText size={20} className="text-[#4640DE]" /> Job Description
           </h2>
           <div className="font-[family-name:var(--font-epilogue)] text-[15px] text-[#515B6F] leading-[1.8] whitespace-pre-line">
@@ -930,26 +913,14 @@ export default function JobDetailPage() {
           )}
         </div>
 
-        {/* ─────────────────────────────────────────────────
-            ROLE-BASED BOTTOM SECTION
-            • user    → apply form
-            • admin   → admin info card (no form)
-            • no auth → sign-in prompt
-        ───────────────────────────────────────────────── */}
-
-        {/* USER: Apply form */}
         {isUser && (
           <div
             id="apply-form"
-            className="bg-white border border-[#E7E7F5] rounded-2xl p-6 sm:p-8
-                                          shadow-[0_2px_20px_rgba(0,0,0,0.04)]"
+            className="bg-white border border-[#E7E7F5] rounded-2xl p-6 sm:p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)]"
           >
             {!applied && (
               <div className="mb-6">
-                <h2
-                  className="font-[family-name:var(--font-epilogue)] font-extrabold text-[20px]
-                                text-[#25324B] flex items-center gap-2"
-                >
+                <h2 className="font-[family-name:var(--font-epilogue)] font-extrabold text-[20px] text-[#25324B] flex items-center gap-2">
                   <Send size={20} className="text-[#4640DE]" /> Apply for this
                   Position
                 </h2>
@@ -969,17 +940,10 @@ export default function JobDetailPage() {
           </div>
         )}
 
-        {/* NOT LOGGED IN: sign-in prompt */}
         {!session && (
-          <div
-            className="bg-white border border-[#E7E7F5] rounded-2xl p-6 sm:p-8
-                          shadow-[0_2px_20px_rgba(0,0,0,0.04)]"
-          >
+          <div className="bg-white border border-[#E7E7F5] rounded-2xl p-6 sm:p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)]">
             <div className="mb-6">
-              <h2
-                className="font-[family-name:var(--font-epilogue)] font-extrabold text-[20px]
-                              text-[#25324B] flex items-center gap-2"
-              >
+              <h2 className="font-[family-name:var(--font-epilogue)] font-extrabold text-[20px] text-[#25324B] flex items-center gap-2">
                 <Send size={20} className="text-[#4640DE]" /> Apply for this
                 Position
               </h2>
@@ -988,12 +952,8 @@ export default function JobDetailPage() {
           </div>
         )}
 
-        {/* ADMIN: info card, no apply form */}
         {isAdmin && (
-          <div
-            className="bg-white border border-[#E7E7F5] rounded-2xl p-6 sm:p-8
-                          shadow-[0_2px_20px_rgba(0,0,0,0.04)]"
-          >
+          <div className="bg-white border border-[#E7E7F5] rounded-2xl p-6 sm:p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)]">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-[#F1F0FF] flex items-center justify-center flex-shrink-0">
                 <ShieldCheck size={22} className="text-[#4640DE]" />
@@ -1012,9 +972,7 @@ export default function JobDetailPage() {
                 </p>
                 <Link
                   href="/admin"
-                  className="inline-flex items-center gap-2 font-[family-name:var(--font-epilogue)]
-                             font-bold text-[14px] text-white bg-[#4640DE] px-5 py-2.5 rounded-xl
-                             hover:bg-[#3730C4] transition-colors"
+                  className="inline-flex items-center gap-2 font-[family-name:var(--font-epilogue)] font-bold text-[14px] text-white bg-[#4640DE] px-5 py-2.5 rounded-xl hover:bg-[#3730C4] transition-colors"
                 >
                   Go to Admin Dashboard <ArrowRight size={15} />
                 </Link>
@@ -1023,12 +981,10 @@ export default function JobDetailPage() {
           </div>
         )}
 
-        {/* Back link */}
         <div className="mt-6 text-center">
           <Link
             href="/jobs"
-            className="inline-flex items-center gap-1.5 font-[family-name:var(--font-epilogue)]
-                       font-semibold text-[14px] text-[#515B6F] hover:text-[#4640DE] transition-colors"
+            className="inline-flex items-center gap-1.5 font-[family-name:var(--font-epilogue)] font-semibold text-[14px] text-[#515B6F] hover:text-[#4640DE] transition-colors"
           >
             <ArrowLeft size={15} /> Back to all jobs
           </Link>
