@@ -4,20 +4,26 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { data: session, status } = useSession();
 
+  const isAuthenticated = status === "authenticated";
+
+  // Scroll shadow effect
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close menu on outside click
+  // Close mobile menu on outside click
   useEffect(() => {
     if (!menuOpen) return;
+
     const handler = (e) => {
       if (
         !e.target.closest("#mobile-menu") &&
@@ -26,6 +32,7 @@ export default function Navbar() {
         setMenuOpen(false);
       }
     };
+
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
   }, [menuOpen]);
@@ -40,7 +47,7 @@ export default function Navbar() {
     >
       <nav className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex gap-10">
-          {/* ── Logo ─────────────────────────────── */}
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 no-underline">
             <Image
               src="/logo.png"
@@ -54,7 +61,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* ── Desktop Nav Links ─────────────────── */}
+          {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-9">
             <Link
               href="/jobs"
@@ -71,23 +78,42 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* ── Desktop CTA Buttons ───────────────── */}
+        {/* Desktop CTA Buttons */}
         <div className="hidden md:flex items-center gap-3">
-          <Link
-            href="/login"
-            className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#4640DE] px-5 py-2.5 rounded hover:bg-[#F1F0FF] transition-colors duration-200 no-underline"
-          >
-            Login
-          </Link>
-          <Link
-            href="/signup"
-            className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white bg-[#4640DE] px-5 py-2.5 rounded hover:bg-[#3730C4] transition-all duration-200 hover:-translate-y-px no-underline"
-          >
-            Sign Up
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#4640DE] px-5 py-2.5 rounded hover:bg-[#F1F0FF] transition-colors duration-200 no-underline"
+              >
+                Dashboard
+              </Link>
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white bg-[#4640DE] px-5 py-2.5 rounded hover:bg-[#3730C4] transition-all duration-200 hover:-translate-y-px"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#4640DE] px-5 py-2.5 rounded hover:bg-[#F1F0FF] transition-colors duration-200 no-underline"
+              >
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white bg-[#4640DE] px-5 py-2.5 rounded hover:bg-[#3730C4] transition-all duration-200 hover:-translate-y-px no-underline"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
 
-        {/* ── Mobile Hamburger ──────────────────── */}
+        {/* Mobile Hamburger */}
         <button
           id="hamburger"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -99,7 +125,7 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* ── Mobile Menu ───────────────────────── */}
+      {/* Mobile Menu */}
       <div
         id="mobile-menu"
         className={`md:hidden bg-white border-t border-[#E7E7F5] overflow-hidden transition-all duration-300 ease-in-out ${
@@ -121,21 +147,45 @@ export default function Navbar() {
           >
             Browse Companies
           </Link>
+
           <div className="flex gap-3 mt-4">
-            <Link
-              href="/login"
-              className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#4640DE] py-3 border-2 border-[#4640DE] rounded no-underline"
-              onClick={() => setMenuOpen(false)}
-            >
-              Login
-            </Link>
-            <Link
-              href="/signup"
-              className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white bg-[#4640DE] py-3 rounded no-underline"
-              onClick={() => setMenuOpen(false)}
-            >
-              Sign Up
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#4640DE] py-3 border-2 border-[#4640DE] rounded no-underline"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    signOut({ callbackUrl: "/" });
+                  }}
+                  className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white bg-[#4640DE] py-3 rounded"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-[#4640DE] py-3 border-2 border-[#4640DE] rounded no-underline"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="flex-1 text-center font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white bg-[#4640DE] py-3 rounded no-underline"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

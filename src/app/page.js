@@ -17,7 +17,6 @@ export default function Home() {
         body { margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
       `}</style>
-      <Navbar></Navbar>
       <main>
         <Hero></Hero>
         <OurPartners></OurPartners>
@@ -26,7 +25,6 @@ export default function Home() {
         <FeaturedJobs></FeaturedJobs>
         <LatestJobs></LatestJobs>
       </main>
-      <Footer></Footer>
     </>
   );
 }
