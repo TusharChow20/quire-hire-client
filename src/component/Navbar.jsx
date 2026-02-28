@@ -39,34 +39,36 @@ export default function Navbar() {
       }`}
     >
       <nav className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
-        {/* ── Logo ─────────────────────────────── */}
-        <Link href="/" className="flex items-center gap-2.5 no-underline">
-          <Image
-            src="/logo.png"
-            alt="QuickHire logo"
-            width={32}
-            height={32}
-            className="object-contain"
-          />
-          <span className="font-[family-name:var(--font-epilogue)] font-extrabold text-[18px] text-[#25324B] tracking-tight">
-            QuickHire
-          </span>
-        </Link>
+        <div className="flex gap-10">
+          {/* ── Logo ─────────────────────────────── */}
+          <Link href="/" className="flex items-center gap-2.5 no-underline">
+            <Image
+              src="/logo.png"
+              alt="QuickHire logo"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+            <span className="font-[family-name:var(--font-epilogue)] font-extrabold text-[18px] text-[#25324B] tracking-tight">
+              QuickHire
+            </span>
+          </Link>
 
-        {/* ── Desktop Nav Links ─────────────────── */}
-        <div className="hidden md:flex items-center gap-9">
-          <Link
-            href="/jobs"
-            className="font-[family-name:var(--font-epilogue)] font-medium text-[15px] text-[#515B6F] hover:text-[#4640DE] transition-colors duration-200 no-underline"
-          >
-            Find Jobs
-          </Link>
-          <Link
-            href="/companies"
-            className="font-[family-name:var(--font-epilogue)] font-medium text-[15px] text-[#515B6F] hover:text-[#4640DE] transition-colors duration-200 no-underline"
-          >
-            Browse Companies
-          </Link>
+          {/* ── Desktop Nav Links ─────────────────── */}
+          <div className="hidden md:flex items-center gap-9">
+            <Link
+              href="/jobs"
+              className="font-[family-name:var(--font-epilogue)] font-medium text-[15px] text-[#515B6F] hover:text-[#4640DE] transition-colors duration-200 no-underline"
+            >
+              Find Jobs
+            </Link>
+            <Link
+              href="/companies"
+              className="font-[family-name:var(--font-epilogue)] font-medium text-[15px] text-[#515B6F] hover:text-[#4640DE] transition-colors duration-200 no-underline"
+            >
+              Browse Companies
+            </Link>
+          </div>
         </div>
 
         {/* ── Desktop CTA Buttons ───────────────── */}

@@ -1,7 +1,11 @@
+import ExploreCategories from "@/component/ExploreCategories";
+import FeaturedJobs from "@/component/FeaturedJobs";
 import Footer from "@/component/Footer";
 import Hero from "@/component/Hero";
+import LatestJobs from "@/component/Latestjobs";
 import Navbar from "@/component/Navbar";
 import OurPartners from "@/component/Ourpartners ";
+import PostJobsBanner from "@/component/PostJobsBanner";
 import Image from "next/image";
 
 export default function Home() {
@@ -17,6 +21,10 @@ export default function Home() {
       <main>
         <Hero></Hero>
         <OurPartners></OurPartners>
+        <ExploreCategories></ExploreCategories>
+        <PostJobsBanner></PostJobsBanner>
+        <FeaturedJobs></FeaturedJobs>
+        <LatestJobs></LatestJobs>
       </main>
       <Footer></Footer>
     </>

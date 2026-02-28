@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tailwindcss";
-
+@import "swiper/css";
+@import "swiper/css/pagination";
 /* @import url("https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&display=swap"); */
 
 :root {
@@ -46,4 +47,7 @@ html {
 *:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+swiper-container::part(pagination) {
+  display: none;
 }

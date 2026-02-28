@@ -20,9 +20,6 @@ export default function Hero() {
 
   return (
     <>
-      {/* ══════════════════════════════════════════════════
-          HERO SECTION
-      ══════════════════════════════════════════════════ */}
       <section className="bg-[#F8F8FD] pt-16 overflow-hidden relative">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-0 lg:gap-10 min-h-[calc(100vh-64px)] py-12 lg:py-0">
@@ -66,9 +63,6 @@ export default function Hero() {
                 heights and passionate about startups.
               </p>
 
-              {/* ════════════════════════════════════════
-                  SEARCH CARD
-              ════════════════════════════════════════ */}
               <form
                 onSubmit={handleSearch}
                 className="bg-white rounded-lg shadow-[0_4px_28px_rgba(0,0,0,0.09)] max-w-[530px]"
@@ -124,12 +118,6 @@ export default function Hero() {
                     Search my job
                   </button>
                 </div>
-
-                {/* ── Mobile: stacked rows matching screenshot ──
-                    Row 1: 🔍 input with bottom border
-                    Row 2: 📍 location select + chevron with bottom border
-                    Row 3: Full-width blue CTA button
-                ─────────────────────────────────────────────── */}
                 <div className="sm:hidden flex flex-col p-4 gap-0">
                   {/* Row 1: Job keyword */}
                   <div className="flex items-center gap-3 py-3 border-b border-[#D6DDEB]">
@@ -207,11 +195,6 @@ export default function Hero() {
                 </p>
               </div>
             </div>
-
-            {/* ── Right: Person + Rectangle backgrounds ────
-                Only shown on desktop (lg+)
-                Mobile screenshot shows NO image in hero
-            ─────────────────────────────────────────────── */}
             <div className="hidden lg:flex relative order-2 justify-center items-end h-[540px]">
               {/* Rectangle_1 — outermost, fullest coverage */}
               <Image

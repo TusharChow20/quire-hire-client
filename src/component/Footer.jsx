@@ -17,7 +17,6 @@ export default function Footer() {
   const handleSubscribe = (e) => {
     e.preventDefault();
     if (email.trim()) {
-      // TODO: connect to /api/newsletter
       setSubscribed(true);
       setEmail("");
       setTimeout(() => setSubscribed(false), 3000);
