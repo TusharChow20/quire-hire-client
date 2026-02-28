@@ -310,13 +310,13 @@ function LatestJobCard({ job }) {
         <span className="w-1 h-1 rounded-full bg-[#D6DDEB] inline-block" />
         <span>{job.location}</span>
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1">
         {job.tags.map((tag) => {
           const s = TAG_STYLES[tag] || { bg: "#F0F0F0", text: "#666" };
           return (
             <span
               key={tag}
-              className="font-[family-name:var(--font-epilogue)] font-semibold text-[12px] px-3 py-1 rounded-full border"
+              className="font-[family-name:var(--font-epilogue)] font-semibold text-[10px] sm:text-[12px] px-2 py-1 rounded-full border"
               style={{ background: s.bg, color: s.text, borderColor: s.text }}
             >
               {tag}
