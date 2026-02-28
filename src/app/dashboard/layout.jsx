@@ -7,17 +7,13 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   Briefcase,
-  Bookmark,
   User,
   LogOut,
   BarChart2,
-  Settings,
   ChevronRight,
   Menu,
   X,
-  Star,
   FileText,
-  Users,
   Building2,
 } from "lucide-react";
 
@@ -61,17 +57,18 @@ export default function DashboardLayout({ children }) {
 
   const isAdmin = session.user.role === "admin";
 
+  // ✅ Users see their own application history, not the admin management page
   const userNav = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
     {
-      href: "/dashboard/applications",
+      href: "/dashboard/my-applications",
       icon: Briefcase,
       label: "My Applications",
     },
-    { href: "/dashboard/saved", icon: Bookmark, label: "Saved Jobs" },
     { href: "/dashboard/profile", icon: User, label: "Profile" },
   ];
 
+  // ✅ Only admins see the Applications management + Analytics pages
   const adminNav = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
     { href: "/dashboard/jobs", icon: Briefcase, label: "Manage Jobs" },
@@ -123,7 +120,7 @@ export default function DashboardLayout({ children }) {
         ))}
       </nav>
 
-      {/* Bottom: quick links + logout */}
+      {/* Bottom */}
       <div className="p-4 border-t border-[#F0F0F0] space-y-1">
         <NavItem
           href="/jobs"
@@ -173,7 +170,7 @@ export default function DashboardLayout({ children }) {
 
       <div className="max-w-[1400px] mx-auto flex">
         {/* Desktop sidebar */}
-        <aside className="hidden lg:flex flex-col w-64 min-h-[calc(100vh-64px)]  border-r border-[#D6DDEB] sticky top-16 self-start">
+        <aside className="hidden lg:flex flex-col w-64 min-h-[calc(100vh-64px)] border-r border-[#D6DDEB] sticky top-16 self-start">
           <SidebarContent onClose={() => {}} />
         </aside>
 

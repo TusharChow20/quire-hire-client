@@ -21,7 +21,7 @@ export default function Hero() {
   return (
     <>
       <section className="bg-[#F8F8FD] pt-16 overflow-hidden relative">
-        <div className="max-w-[1200px] mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-0 lg:gap-10 min-h-[calc(100vh-64px)] py-12 lg:py-0">
             {/* ── Left: Copy + Search ────────────────────── */}
             <div className="relative z-10 order-1">
