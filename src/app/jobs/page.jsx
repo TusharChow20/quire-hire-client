@@ -582,10 +582,10 @@ function JobsPageInner() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F8FD] pt-16">
+    <div className="min-h-screen pt-16">
       {/* ── Hero / Search header ── */}
       <div className="bg-white border-b border-[#E7E7F5]">
-        <div className="max-w-[1200px] mx-auto px-6 py-10 sm:py-14">
+        <div className="max-w-[1200px] mx-auto px-6 py-2 sm:py-2">
           <h1
             className="font-[family-name:var(--font-epilogue)] font-extrabold text-[28px] sm:text-[38px]
                           text-[#25324B] mb-2 leading-tight"
@@ -632,7 +632,7 @@ function JobsPageInner() {
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-6 py-8">
+      <div className=" mx-auto px-6 py-8">
         {/* ── Filter bar ── */}
         <div className="flex items-center gap-3 mb-2 flex-wrap">
           <div className="hidden sm:flex items-center gap-2 flex-wrap flex-1">

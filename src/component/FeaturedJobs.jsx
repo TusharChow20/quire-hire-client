@@ -113,6 +113,7 @@ export default function FeaturedJobs() {
   const swiperElRef = useRef(null);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [swiperReady, setSwiperReady] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -131,29 +132,45 @@ export default function FeaturedJobs() {
     load();
   }, []);
 
+  // Init Swiper only on mobile after jobs are loaded
   useEffect(() => {
-    if (typeof window === "undefined" || loading) return;
-    const initMobileSwiper = async () => {
-      if (window.innerWidth >= 640) return;
+    if (typeof window === "undefined" || loading || jobs.length === 0) return;
+    if (window.innerWidth >= 640) return;
+
+    const initSwiper = async () => {
       const { register } = await import("swiper/element/bundle");
       register();
+
+      // Small delay to let the DOM render the swiper-container
+      await new Promise((r) => setTimeout(r, 50));
+
       const swiperEl = swiperElRef.current;
       if (!swiperEl) return;
+
       Object.assign(swiperEl, {
-        slidesPerView: 1.12,
-        spaceBetween: 14,
+        slidesPerView: 1.15,
+        spaceBetween: 16,
         grabCursor: true,
         loop: true,
-        autoplay: { delay: 2500, disableOnInteraction: false },
+        autoplay: {
+          delay: 2500,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        },
+        speed: 600,
       });
+
       swiperEl.initialize();
+      setSwiperReady(true);
     };
-    initMobileSwiper();
-  }, [loading]);
+
+    initSwiper();
+  }, [loading, jobs]);
 
   return (
-    <section className="bg-white  ">
+    <section className="bg-white">
       <div className="max-w-[1200px] mx-auto px-6">
+        {/* Header */}
         <div className="flex items-center justify-between mb-10 sm:mb-12">
           <h2 className="font-[family-name:var(--font-epilogue)] font-extrabold text-[28px] sm:text-[32px] text-[#25324B]">
             Featured <span className="text-[#26A4FF]">jobs</span>
@@ -167,7 +184,7 @@ export default function FeaturedJobs() {
           </Link>
         </div>
 
-        {/* Desktop grid */}
+        {/* ── Desktop grid (sm and above) ── */}
         <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-5">
           {loading ? (
             [...Array(8)].map((_, i) => <SkeletonCard key={i} />)
@@ -182,29 +199,7 @@ export default function FeaturedJobs() {
           )}
         </div>
 
-        {/* Mobile swiper */}
-        {!loading && jobs.length > 0 && (
-          <div className="sm:hidden -mx-6 px-6">
-            <swiper-container
-              ref={swiperElRef}
-              init="false"
-              slides-per-view="1.22"
-              space-between="14"
-              grab-cursor="true"
-              pagination="true"
-              pagination-clickable="true"
-            >
-              {jobs.map((job) => (
-                <swiper-slide key={job._id}>
-                  <div className="pb-10">
-                    <JobCard job={job} />
-                  </div>
-                </swiper-slide>
-              ))}
-            </swiper-container>
-          </div>
-        )}
-
+        {/* ── Mobile skeleton ── */}
         {loading && (
           <div className="sm:hidden flex flex-col gap-4">
             {[...Array(3)].map((_, i) => (
@@ -213,7 +208,24 @@ export default function FeaturedJobs() {
           </div>
         )}
 
-        <div className="sm:hidden mt-4">
+        {/* ── Mobile Swiper ── */}
+        {!loading && jobs.length > 0 && (
+          <div className="sm:hidden -mx-6 px-6 overflow-hidden">
+            <swiper-container ref={swiperElRef} init="false">
+              {jobs.map((job) => (
+                <swiper-slide key={job._id}>
+                  {/* pb for box-shadow visibility */}
+                  <div className="pb-4 pt-1">
+                    <JobCard job={job} />
+                  </div>
+                </swiper-slide>
+              ))}
+            </swiper-container>
+          </div>
+        )}
+
+        {/* ── Mobile "Show all jobs" link ── */}
+        <div className="sm:hidden mt-6">
           <Link
             href="/jobs"
             className="inline-flex items-center gap-1.5 font-semibold text-[15px]
