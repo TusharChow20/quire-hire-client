@@ -27,7 +27,10 @@ export default function RootLayout({ children }) {
       >
         <SessionProvider>
           <Navbar></Navbar>
-          {children}
+
+          <main className="min-h-[calc(100vh-167.5px)] max-w-7xl mx-auto">
+            {children}
+          </main>
           <Footer></Footer>
         </SessionProvider>
       </body>

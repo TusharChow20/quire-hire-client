@@ -179,9 +179,76 @@ export default function LatestJobs() {
   return (
     <section className="relative bg-[#F8F8FD] sm:py-10 overflow-hidden">
       <div
-        className="absolute -top-[1px] -left-[1px] w-[72px] h-[62px] bg-white hidden lg:block"
+        className="absolute -top-[10px] -left-[1px] w-[72px] h-[62px] bg-white hidden lg:block"
         style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
       />
+
+      <svg
+        className="absolute top-20 right-10 hidden lg:block pointer-events-none"
+        width="220"
+        height="220"
+        viewBox="0 0 220 220"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        {/* Large rotated rectangle outline */}
+        <rect
+          x="20"
+          y="-30"
+          width="160"
+          height="160"
+          rx="4"
+          stroke="#C8C6E8"
+          strokeWidth="1.5"
+          fill="none"
+          transform="rotate(15 140 80)"
+        />
+        <rect
+          x="110"
+          y="10"
+          width="100"
+          height="100"
+          rx="4"
+          stroke="#C8C6E8"
+          strokeWidth="1.5"
+          fill="none"
+          transform="rotate(15 160 60)"
+        />
+      </svg>
+
+      {/* Decorative background rectangles — bottom right */}
+      <svg
+        className="absolute bottom-0 right-0 hidden lg:block pointer-events-none"
+        width="180"
+        height="200"
+        viewBox="0 0 180 200"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        {/* Large rotated rectangle outline */}
+        <rect
+          x="30"
+          y="40"
+          width="160"
+          height="160"
+          rx="4"
+          stroke="#C8C6E8"
+          strokeWidth="1.5"
+          fill="none"
+          transform="rotate(15 110 120)"
+        />
+        {/* Vertical thin line accent */}
+        <line
+          x1="95"
+          y1="60"
+          x2="85"
+          y2="195"
+          stroke="#C8C6E8"
+          strokeWidth="1.5"
+        />
+      </svg>
 
       <div className="relative z-10 max-w-[1200px] mx-auto px-6">
         <div className="flex items-center justify-between mb-10 sm:mb-12">

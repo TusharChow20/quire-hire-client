@@ -41,10 +41,10 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 bg-white transition-shadow duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "shadow-[0_2px_20px_rgba(0,0,0,0.08)]"
-          : "border-b border-[#E7E7F5]"
+          ? "bg-white shadow-[0_2px_20px_rgba(0,0,0,0.08)]"
+          : "bg-transparent"
       }`}
     >
       <nav className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
@@ -118,7 +118,7 @@ export default function Navbar() {
                 Login
               </Link>
               <Link
-                href="/signup"
+                href="/register"
                 className="font-[family-name:var(--font-epilogue)] font-bold text-[15px] text-white
                            bg-[#4640DE] px-5 py-2.5 rounded hover:bg-[#3730C4]
                            transition-all duration-200 hover:-translate-y-px no-underline"

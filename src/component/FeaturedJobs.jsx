@@ -152,7 +152,7 @@ export default function FeaturedJobs() {
   }, [loading]);
 
   return (
-    <section className="bg-white py-16 sm:py-20">
+    <section className="bg-white  ">
       <div className="max-w-[1200px] mx-auto px-6">
         <div className="flex items-center justify-between mb-10 sm:mb-12">
           <h2 className="font-[family-name:var(--font-epilogue)] font-extrabold text-[28px] sm:text-[32px] text-[#25324B]">
