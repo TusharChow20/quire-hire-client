@@ -444,7 +444,7 @@ function ApplyForm({ job, session, onSuccess }) {
             Log In
           </Link>
           <Link
-            href="/signup"
+            href="/register"
             className="font-[family-name:var(--font-epilogue)] font-bold text-[14px] text-white bg-[#4640DE] px-6 py-3 rounded-xl hover:bg-[#3730C4] transition-colors"
           >
             Sign Up Free
@@ -498,7 +498,7 @@ function ApplyForm({ job, session, onSuccess }) {
           label="Phone Number"
           name="phone"
           icon={Phone}
-          placeholder="+1 (555) 000-0000"
+          placeholder="+880157000222"
           hint="Optional"
           value={form.phone}
           onChange={(e) => set("phone", e.target.value)}

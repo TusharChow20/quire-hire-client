@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, MapPin, ChevronDown } from "lucide-react";
 
-const POPULAR_TAGS = ["UI Designer", "UX Researcher", "Android", "Admin"];
+const POPULAR_TAGS = ["Design", "Engineering", "Marketing", "Business"];
 
 function GeometricBackground() {
   const STROKE = "rgba(176, 168, 228, 1)";

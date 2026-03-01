@@ -80,7 +80,7 @@ export default function RegisterPage() {
     }`;
 
   return (
-    <div className="min-h-screen bg-[#F8F8FD] flex">
+    <div className="min-h-screen  py-15 flex">
       {/* ── Left decorative panel ─────────────────────── */}
       <div className="hidden lg:flex lg:w-[45%] relative bg-[#25324B] overflow-hidden flex-col justify-between p-12">
         {/* grid lines */}
